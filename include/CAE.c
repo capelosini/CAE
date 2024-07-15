@@ -18,7 +18,6 @@ Game* initGame(GameConfig config){
     al_set_window_title(game->display, config.title);
     game->ev_queue = al_create_event_queue();
     game->timer = al_create_timer(1.0 / config.fps);
-    game->objects = (GameObject*)malloc(sizeof(GameObject)*config.objectsMax);
     game->isAlive = 1;
 
     al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
@@ -33,7 +32,6 @@ void freeGame(Game* game){
     al_destroy_display(game->display);
     al_destroy_event_queue(game->ev_queue);
     al_destroy_timer(game->timer);
-    free(game->objects);
     free(game);
 }
 
@@ -45,7 +43,7 @@ void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT)){
     game->eventFunction = f;
 }
 
-void render(Game* game, GameCamera camera){
+void render(Game* game, Scene* scene){
     do {
         ALLEGRO_EVENT ev;
         al_wait_for_event(game->ev_queue, &ev);
@@ -58,6 +56,7 @@ void render(Game* game, GameCamera camera){
     
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
     // TODO!
+    scene->scriptFunction(scene);
 
     // HERE: MY FUNCTION TO MAKE THE RENDER MAGIC, CAMERA ETC
     // TODO!
