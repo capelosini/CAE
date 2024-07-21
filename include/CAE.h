@@ -1,7 +1,6 @@
 #include <allegro5/allegro.h>
 #include <stdlib.h>
 
-typedef enum OBJECT_TYPE OBJECT_TYPE;
 enum OBJECT_TYPE {
     SOLID,
     PLAYER
@@ -22,13 +21,13 @@ typedef struct GameObject GameObject;
 struct GameObject{
     int x;
     int y;
-    OBJECT_TYPE type;
+    enum OBJECT_TYPE type;
 };
 
 typedef struct GameCamera GameCamera;
 struct GameCamera{
     int x;
-    int y;    
+    int y;
 };
 
 typedef struct Scene Scene;
