@@ -39,7 +39,7 @@ void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source){
     al_register_event_source(game->ev_queue, ev_source);
 }
 
-void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT)){
+void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*)){
     game->eventFunction = f;
 }
 
@@ -51,7 +51,7 @@ void render(Game* game, Scene* scene){
             game->isAlive=0;
             return;
         }
-        game->eventFunction(ev);
+        game->eventFunction(ev, scene);
     } while(!al_is_event_queue_empty(game->ev_queue));
     
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
@@ -63,4 +63,18 @@ void render(Game* game, Scene* scene){
 
     al_flip_display();
 
+}
+
+Scene* createScene(int maxObjects, void (*scriptFunction)(Scene*)){
+    Scene* scene = (Scene*)malloc(sizeof(Scene));
+    scene->objects = (GameObject*)malloc(sizeof(GameObject)*maxObjects);
+    scene->camera.x=0;
+    scene->camera.y=0;
+    scene->scriptFunction=scriptFunction;
+    return scene;
+}
+
+void freeScene(Scene* scene){
+    free(scene->objects);
+    free(scene);
 }
