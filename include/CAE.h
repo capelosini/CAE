@@ -25,6 +25,14 @@ struct GameObject{
     int height;
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
+    GameObject* next;
+};
+
+typedef struct GameObjectList GameObjectList;
+struct GameObjectList{
+    GameObject* first;
+    GameObject* last;
+    int length;
 };
 
 typedef struct GameCamera GameCamera;
@@ -36,7 +44,7 @@ struct GameCamera{
 typedef struct Scene Scene;
 struct Scene{
     GameCamera camera;
-    GameObject* objects;
+    GameObjectList* objects;
     void (*scriptFunction)(Scene*);
 };
 
@@ -54,5 +62,8 @@ void freeGame(Game* game);
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*));
 void render(Game* game, Scene* scene);
-Scene* createScene(int maxObjects, void (*scriptFunction)(Scene*));
+GameObjectList* createGameObjectList();
+void freeGameObjects(GameObject* obj);
+void freeGameObjectList(GameObjectList* list);
+Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);

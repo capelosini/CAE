@@ -1,4 +1,5 @@
 #include "CAE.h"
+#include <stdio.h>
 
 Game* initGame(GameConfig config){
     al_init();
@@ -65,9 +66,30 @@ void render(Game* game, Scene* scene){
 
 }
 
-Scene* createScene(int maxObjects, void (*scriptFunction)(Scene*)){
+GameObjectList* createGameObjectList(){
+    GameObjectList* list = (GameObjectList*)malloc(sizeof(GameObjectList));
+    list->first=NULL;
+    list->last=NULL;
+    list->length=0;
+    return list;
+}
+
+void freeGameObjects(GameObject* obj){
+    if (obj == NULL)
+        return;
+    freeGameObjects(obj->next);
+    free(obj);
+    printf("Freed 1 Game Object!\n");
+}
+
+void freeGameObjectList(GameObjectList* list){
+    freeGameObjects(list->first);
+    free(list);
+}
+
+Scene* createScene(void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
-    scene->objects = (GameObject*)malloc(sizeof(GameObject)*maxObjects);
+    scene->objects = createGameObjectList();
     scene->camera.x=0;
     scene->camera.y=0;
     scene->scriptFunction=scriptFunction;
@@ -75,6 +97,6 @@ Scene* createScene(int maxObjects, void (*scriptFunction)(Scene*)){
 }
 
 void freeScene(Scene* scene){
-    free(scene->objects);
+    freeGameObjectList(scene->objects);
     free(scene);
 }

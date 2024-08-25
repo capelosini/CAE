@@ -20,14 +20,14 @@ int main(){
     config.title="Test CAE";
 
     Game* game = initGame(config);
-    Scene* mainScene = createScene(5, mainSceneScript);
+    Scene* mainScene = createScene(mainSceneScript);
     setEventFunction(game, handleEvent);
 
     while (game->isAlive){
         render(game, mainScene);
     }
 
-    free(mainScene);
+    freeScene(mainScene);
     freeGame(game);
 
     printf("Exited!\n");
