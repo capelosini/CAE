@@ -100,3 +100,55 @@ void freeScene(Scene* scene){
     freeGameObjectList(scene->objects);
     free(scene);
 }
+
+int addNewGameObjectToScene(Scene* scene, enum OBJECT_TYPE type, int x, int y, int width, int height, ALLEGRO_COLOR color){
+    GameObject* newObj = (GameObject*)malloc(sizeof(GameObject));
+    newObj->type=type;
+    newObj->x=x;
+    newObj->y=y;
+    newObj->width=width;
+    newObj->height=height;
+    newObj->color=color;
+
+    scene->objects->length++;
+
+    // IF FIRST OBJECT IN LIST
+    if (scene->objects->first == NULL && scene->objects->last == NULL){
+        scene->objects->first=newObj;
+        scene->objects->last=newObj;
+        return 0;
+    }
+    // IF IS NOT THE FIRST OBJECT
+    scene->objects->last->next=newObj;
+    scene->objects->last=newObj;
+    return scene->objects->length-1;
+}
+
+void removeGameObjectFromScene(Scene* scene, int id){
+    if (id<0 || id >= scene->objects->length){
+        return;
+    } else if (id == 0){
+        GameObject* tmp = scene->objects->first;
+        scene->objects->first=tmp->next;
+        free(tmp);
+        if (scene->objects->first == NULL){
+            scene->objects->last=NULL;
+        }
+    } else{
+        int i=0;
+        GameObject* obj = scene->objects->first;
+        while (obj != NULL){
+            if (i == id-1){
+                GameObject* toDel = obj->next;
+                if (toDel->next == NULL)
+                    scene->objects->last=obj;
+                obj->next=toDel->next;
+                free(toDel);
+                break;
+            }
+            i++;
+            obj=obj->next;
+        }
+    }
+    scene->objects->length--;
+}

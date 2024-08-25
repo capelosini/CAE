@@ -67,3 +67,5 @@ void freeGameObjects(GameObject* obj);
 void freeGameObjectList(GameObjectList* list);
 Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
+int addNewGameObjectToScene(Scene* scene, enum OBJECT_TYPE type, int x, int y, int width, int height, ALLEGRO_COLOR color);
+void removeGameObjectFromScene(Scene* scene, int id);

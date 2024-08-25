@@ -23,6 +23,13 @@ int main(){
     Scene* mainScene = createScene(mainSceneScript);
     setEventFunction(game, handleEvent);
 
+    printf("LENGTH: %d\n", mainScene->objects->length);
+    int square = addNewGameObjectToScene(mainScene, SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
+    printf("LENGTH: %d\n", mainScene->objects->length);
+    int square2 = addNewGameObjectToScene(mainScene, SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
+    printf("SQUARE1 ID: %d\nSQUARE2 ID: %d\n", square, square2);
+    printf("LENGTH: %d\n", mainScene->objects->length);
+
     while (game->isAlive){
         render(game, mainScene);
     }
