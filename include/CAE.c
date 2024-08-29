@@ -4,6 +4,8 @@
 
 Game* initGame(GameConfig config){
     al_init();
+    al_install_keyboard();
+    al_install_mouse();
     Game* game = (Game*)malloc(sizeof(Game));
     if (config.fullscreen){
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
@@ -25,6 +27,8 @@ Game* initGame(GameConfig config){
     game->isAlive = 1;
 
     al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
+    al_register_event_source(game->ev_queue, al_get_keyboard_event_source());
+    al_register_event_source(game->ev_queue, al_get_mouse_event_source());
     al_register_event_source(game->ev_queue, al_get_timer_event_source(game->timer));
     
     al_start_timer(game->timer);
@@ -57,7 +61,7 @@ void render(Game* game, Scene* scene){
         }
         game->eventFunction(ev, scene);
     } while(!al_is_event_queue_empty(game->ev_queue));
-    
+
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
     scene->scriptFunction(scene);
 
@@ -96,7 +100,6 @@ void render(Game* game, Scene* scene){
         }
         obj=obj->next;
     }
-
     al_flip_display();
 }
 
@@ -143,6 +146,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->width=width;
     newObj->height=height;
     newObj->color=color;
+    newObj->next=NULL;
     return newObj;
 }
 
@@ -158,6 +162,12 @@ void addGameObjectToScene(Scene* scene, GameObject* obj){
     // IF IS NOT THE FIRST OBJECT
     scene->objects->last->next=obj;
     scene->objects->last=obj;
+    if (obj->next != NULL){
+        printf("WARNING: Added maybe an object from other list or the same, this is strange!");
+        free(obj->next);
+        obj->next=NULL;
+    }
+    //printf("First: %p\nLast: %p\nOBJ: %p\nOBJ->NEXT: %p\n\n", scene->objects->first, scene->objects->last, obj, obj->next);
 }
 
 void removeGameObjectFromScene(Scene* scene, int id){

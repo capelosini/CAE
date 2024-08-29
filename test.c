@@ -1,14 +1,25 @@
 #include "include/CAE.h"
 #include <stdio.h>
 
+GameObject* square;
+
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene){
-    
+    if (ev.type == ALLEGRO_EVENT_KEY_CHAR){
+        switch (ev.keyboard.keycode){
+            case ALLEGRO_KEY_LEFT:
+                square->x-=4;
+                break;
+            case ALLEGRO_KEY_RIGHT:
+                square->x+=4;
+                break;
+        }
+    }
 }
 
 void mainSceneScript(Scene* self){
     al_clear_to_color(al_map_rgb(255, 255, 255));
-    self->camera.x+=1;
-    self->camera.y-=1;
+    //self->camera.x+=1;
+    //self->camera.y-=1;
 }
 
 int main(){
@@ -25,7 +36,7 @@ int main(){
     Scene* mainScene = createScene(mainSceneScript);
     setEventFunction(game, handleEvent);
 
-    GameObject* square = createGameObject(SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
+    square = createGameObject(SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
     GameObject* square2 = createGameObject(SOLID, 300, 300, 50, 50, al_map_rgb(0,0,0));
     printf("LENGTH: %d\n", mainScene->objects->length);
     addGameObjectToScene(mainScene, square);
