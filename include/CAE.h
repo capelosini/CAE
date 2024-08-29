@@ -1,4 +1,5 @@
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
 #include <stdlib.h>
 
 enum OBJECT_TYPE {
@@ -19,8 +20,8 @@ struct GameConfig{
 
 typedef struct GameObject GameObject;
 struct GameObject{
-    int x;
-    int y;
+    float x;
+    float y;
     int width;
     int height;
     ALLEGRO_COLOR color;
@@ -37,8 +38,8 @@ struct GameObjectList{
 
 typedef struct GameCamera GameCamera;
 struct GameCamera{
-    int x;
-    int y;
+    float x;
+    float y;
 };
 
 typedef struct Scene Scene;
@@ -54,6 +55,8 @@ struct Game{
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *ev_queue;
     ALLEGRO_TIMER *timer;
+    int windowX;
+    int windowY;
     void (*eventFunction)(ALLEGRO_EVENT, Scene*);
 };
 
@@ -67,5 +70,6 @@ void freeGameObjects(GameObject* obj);
 void freeGameObjectList(GameObjectList* list);
 Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
-int addNewGameObjectToScene(Scene* scene, enum OBJECT_TYPE type, int x, int y, int width, int height, ALLEGRO_COLOR color);
+GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, ALLEGRO_COLOR color);
+void addGameObjectToScene(Scene* scene, GameObject* obj);
 void removeGameObjectFromScene(Scene* scene, int id);

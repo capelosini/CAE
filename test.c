@@ -7,6 +7,8 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene){
 
 void mainSceneScript(Scene* self){
     al_clear_to_color(al_map_rgb(255, 255, 255));
+    self->camera.x+=1;
+    self->camera.y-=1;
 }
 
 int main(){
@@ -23,11 +25,12 @@ int main(){
     Scene* mainScene = createScene(mainSceneScript);
     setEventFunction(game, handleEvent);
 
+    GameObject* square = createGameObject(SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
+    GameObject* square2 = createGameObject(SOLID, 300, 300, 50, 50, al_map_rgb(0,0,0));
     printf("LENGTH: %d\n", mainScene->objects->length);
-    int square = addNewGameObjectToScene(mainScene, SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
+    addGameObjectToScene(mainScene, square);
     printf("LENGTH: %d\n", mainScene->objects->length);
-    int square2 = addNewGameObjectToScene(mainScene, SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
-    printf("SQUARE1 ID: %d\nSQUARE2 ID: %d\n", square, square2);
+    addGameObjectToScene(mainScene, square2);
     printf("LENGTH: %d\n", mainScene->objects->length);
 
     while (game->isAlive){

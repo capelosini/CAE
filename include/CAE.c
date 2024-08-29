@@ -1,5 +1,6 @@
 #include "CAE.h"
 #include <stdio.h>
+#include <math.h>
 
 Game* initGame(GameConfig config){
     al_init();
@@ -13,6 +14,8 @@ Game* initGame(GameConfig config){
     }
 
     game->display = al_create_display(config.sizeX, config.sizeY);
+    game->windowX = config.sizeX;
+    game->windowY = config.sizeY;
     if (!config.fullscreen){
         al_set_window_position(game->display, config.posX, config.posY);
     }
@@ -56,14 +59,45 @@ void render(Game* game, Scene* scene){
     } while(!al_is_event_queue_empty(game->ev_queue));
     
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
-    // TODO!
     scene->scriptFunction(scene);
 
     // HERE: MY FUNCTION TO MAKE THE RENDER MAGIC, CAMERA ETC
-    // TODO!
+    GameObject* obj=scene->objects->first;
+    while (obj!=NULL){
+        // IS OBJECT NOT VISIBLE IN CAMERA
+        if (!(obj->x+obj->width > scene->camera.x && obj->x < scene->camera.x+game->windowX) && !(obj->y+obj->height > scene->camera.y && obj->y < scene->camera.y+game->windowY)){
+            obj=obj->next;
+            continue;
+        }
+        float x;
+        float y;
+        if (obj->x < 0 && scene->camera.x < 0)
+            x=fabs(obj->x) - fabs(scene->camera.x);
+        else
+            x=obj->x - scene->camera.x;
+        if (obj->y < 0 && scene->camera.y < 0)
+            y=fabs(obj->y) - fabs(scene->camera.y);
+        else
+            y=obj->y - scene->camera.y;
+
+        if (obj->x > scene->camera.x)
+            x=fabs(x);
+        if (obj->y > scene->camera.y)
+            y=fabs(y);
+
+        //printf("Rendered cube at (%f, %f)\n", x, y);
+
+        switch (obj->type){
+            case SOLID:
+                al_draw_filled_rectangle(x, y, x+obj->width, y+obj->height, obj->color);
+                break;
+            default:
+                break;
+        }
+        obj=obj->next;
+    }
 
     al_flip_display();
-
 }
 
 GameObjectList* createGameObjectList(){
@@ -90,8 +124,8 @@ void freeGameObjectList(GameObjectList* list){
 Scene* createScene(void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
     scene->objects = createGameObjectList();
-    scene->camera.x=0;
-    scene->camera.y=0;
+    scene->camera.x=0.;
+    scene->camera.y=0.;
     scene->scriptFunction=scriptFunction;
     return scene;
 }
@@ -101,7 +135,7 @@ void freeScene(Scene* scene){
     free(scene);
 }
 
-int addNewGameObjectToScene(Scene* scene, enum OBJECT_TYPE type, int x, int y, int width, int height, ALLEGRO_COLOR color){
+GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, ALLEGRO_COLOR color){
     GameObject* newObj = (GameObject*)malloc(sizeof(GameObject));
     newObj->type=type;
     newObj->x=x;
@@ -109,19 +143,21 @@ int addNewGameObjectToScene(Scene* scene, enum OBJECT_TYPE type, int x, int y, i
     newObj->width=width;
     newObj->height=height;
     newObj->color=color;
+    return newObj;
+}
 
+void addGameObjectToScene(Scene* scene, GameObject* obj){
     scene->objects->length++;
 
     // IF FIRST OBJECT IN LIST
     if (scene->objects->first == NULL && scene->objects->last == NULL){
-        scene->objects->first=newObj;
-        scene->objects->last=newObj;
-        return 0;
+        scene->objects->first=obj;
+        scene->objects->last=obj;
+        return;
     }
     // IF IS NOT THE FIRST OBJECT
-    scene->objects->last->next=newObj;
-    scene->objects->last=newObj;
-    return scene->objects->length-1;
+    scene->objects->last->next=obj;
+    scene->objects->last=obj;
 }
 
 void removeGameObjectFromScene(Scene* scene, int id){

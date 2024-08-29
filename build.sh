@@ -1,1 +1,1 @@
-gcc test.c include/CAE.c -o test -lallegro
+gcc test.c include/CAE.c -o test -lallegro -lallegro_primitives -lm
