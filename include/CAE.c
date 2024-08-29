@@ -65,7 +65,7 @@ void render(Game* game, Scene* scene){
     GameObject* obj=scene->objects->first;
     while (obj!=NULL){
         // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!(obj->x+obj->width > scene->camera.x && obj->x < scene->camera.x+game->windowX) && !(obj->y+obj->height > scene->camera.y && obj->y < scene->camera.y+game->windowY)){
+        if (!((obj->x+obj->width > scene->camera.x && obj->x < scene->camera.x+game->windowX) && (obj->y+obj->height > scene->camera.y && obj->y < scene->camera.y+game->windowY))){
             obj=obj->next;
             continue;
         }
