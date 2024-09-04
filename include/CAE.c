@@ -4,6 +4,7 @@
 
 Game* initGame(GameConfig config){
     al_init();
+    al_init_primitives_addon();
     al_install_keyboard();
     al_install_mouse();
     Game* game = (Game*)malloc(sizeof(Game));
@@ -40,6 +41,9 @@ void freeGame(Game* game){
     al_destroy_display(game->display);
     al_destroy_event_queue(game->ev_queue);
     al_destroy_timer(game->timer);
+    al_shutdown_primitives_addon();
+    al_uninstall_keyboard();
+    al_uninstall_mouse();
     free(game);
 }
 
@@ -47,7 +51,7 @@ void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source){
     al_register_event_source(game->ev_queue, ev_source);
 }
 
-void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*)){
+void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game* game)){
     game->eventFunction = f;
 }
 
@@ -59,7 +63,7 @@ void render(Game* game, Scene* scene){
             game->isAlive=0;
             return;
         }
-        game->eventFunction(ev, scene);
+        game->eventFunction(ev, scene, game);
     } while(!al_is_event_queue_empty(game->ev_queue));
 
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
@@ -90,6 +94,29 @@ void render(Game* game, Scene* scene){
             y=fabs(y);
 
         //printf("Rendered cube at (%f, %f)\n", x, y);
+
+        // PHYSICS PROCESS
+        if (obj->physics.enabled){
+            if (obj->physics.speed <= obj->physics.maxSpeed){
+                obj->physics.speed+=obj->physics.acc-obj->physics.friction;
+                if (obj->physics.speed < 0){ obj->physics.speed=0; }
+            }
+            else{
+                obj->physics.speed=obj->physics.maxSpeed;
+            }
+            // if (obj->physics.acc == 0.){
+            //     obj->physics.speed-=obj->physics.friction;
+            // }
+            
+            // GRAVITY
+            if (obj->physics.gravity){
+                obj->physics.gravitySpeed+=scene->gravityValue;
+                obj->y+=obj->physics.gravitySpeed;
+            }
+
+            obj->x+=obj->physics.speed*obj->physics.directions.x;
+            obj->y+=obj->physics.speed*obj->physics.directions.y;
+        }
 
         switch (obj->type){
             case SOLID:
@@ -130,6 +157,7 @@ Scene* createScene(void (*scriptFunction)(Scene*)){
     scene->camera.x=0.;
     scene->camera.y=0.;
     scene->scriptFunction=scriptFunction;
+    scene->gravityValue=0.1;
     return scene;
 }
 
@@ -147,6 +175,15 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->height=height;
     newObj->color=color;
     newObj->next=NULL;
+    newObj->physics.acc=0;
+    newObj->physics.enabled=0;
+    newObj->physics.gravity=0;
+    newObj->physics.directions.x=0;
+    newObj->physics.directions.y=0;
+    newObj->physics.friction=0;
+    newObj->physics.maxSpeed=0;
+    newObj->physics.speed=0;
+    newObj->physics.gravitySpeed=0;
     return newObj;
 }
 

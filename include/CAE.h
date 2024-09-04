@@ -9,6 +9,12 @@ enum OBJECT_TYPE {
     SPRITE
 };
 
+typedef struct Vector2 Vector2;
+struct Vector2{
+    float x;
+    float y;
+};
+
 typedef struct GameConfig GameConfig;
 struct GameConfig{
     char fullscreen;
@@ -20,12 +26,25 @@ struct GameConfig{
     int fps;
 };
 
+typedef struct PhysicsConfig PhysicsConfig;
+struct PhysicsConfig{
+    unsigned char enabled;
+    unsigned char gravity;
+    Vector2 directions;
+    float speed;
+    float maxSpeed;
+    float acc;
+    float friction;
+    float gravitySpeed;
+};
+
 typedef struct GameObject GameObject;
 struct GameObject{
     float x;
     float y;
     int width;
     int height;
+    PhysicsConfig physics;
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
     GameObject* next;
@@ -49,6 +68,7 @@ struct Scene{
     GameCamera camera;
     GameObjectList* objects;
     void (*scriptFunction)(Scene*);
+    float gravityValue;
 };
 
 typedef struct Game Game;
@@ -59,13 +79,13 @@ struct Game{
     ALLEGRO_TIMER *timer;
     int windowX;
     int windowY;
-    void (*eventFunction)(ALLEGRO_EVENT, Scene*);
+    void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
 };
 
 Game* initGame(GameConfig config);
 void freeGame(Game* game);
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
-void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*));
+void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game*));
 void render(Game* game, Scene* scene);
 GameObjectList* createGameObjectList();
 void freeGameObjects(GameObject* obj);

@@ -3,15 +3,24 @@
 
 GameObject* square;
 
-void handleEvent(ALLEGRO_EVENT ev, Scene* scene){
-    if (ev.type == ALLEGRO_EVENT_KEY_CHAR){
+void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
+    if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
         switch (ev.keyboard.keycode){
             case ALLEGRO_KEY_LEFT:
-                square->x-=4;
+                square->physics.directions.x=-1;
+                square->physics.acc=0.5;
                 break;
             case ALLEGRO_KEY_RIGHT:
-                square->x+=4;
+                square->physics.directions.x=1;
+                square->physics.acc=0.5;
                 break;
+            case ALLEGRO_KEY_ESCAPE:
+                game->isAlive=0;
+                break;
+        }
+    } else if (ev.type == ALLEGRO_EVENT_KEY_UP){
+        if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT || ev.keyboard.keycode == ALLEGRO_KEY_RIGHT){
+            square->physics.acc=0;
         }
     }
 }
@@ -43,6 +52,11 @@ int main(){
     printf("LENGTH: %d\n", mainScene->objects->length);
     addGameObjectToScene(mainScene, square2);
     printf("LENGTH: %d\n", mainScene->objects->length);
+
+    square->physics.enabled=1;
+    square->physics.friction=0.4;
+    square->physics.maxSpeed=5;
+    //square->physics.gravity=1;
 
     while (game->isAlive){
         render(game, mainScene);
