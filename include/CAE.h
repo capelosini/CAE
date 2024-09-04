@@ -31,9 +31,9 @@ struct PhysicsConfig{
     unsigned char enabled;
     unsigned char gravity;
     Vector2 directions;
-    float speed;
+    Vector2 speed;
     float maxSpeed;
-    float acc;
+    Vector2 acc;
     float friction;
     float gravitySpeed;
 };

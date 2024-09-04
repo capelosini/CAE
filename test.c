@@ -4,15 +4,23 @@
 GameObject* square;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
-    if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
+    if (ev.type == ALLEGRO_EVENT_KEY_CHAR){
         switch (ev.keyboard.keycode){
             case ALLEGRO_KEY_LEFT:
                 square->physics.directions.x=-1;
-                square->physics.acc=0.5;
+                square->physics.acc.x=1;
                 break;
             case ALLEGRO_KEY_RIGHT:
                 square->physics.directions.x=1;
-                square->physics.acc=0.5;
+                square->physics.acc.x=1;
+                break;
+            case ALLEGRO_KEY_UP:
+                square->physics.directions.y=-1;
+                square->physics.acc.y=1;
+                break;
+            case ALLEGRO_KEY_DOWN:
+                square->physics.directions.y=1;
+                square->physics.acc.y=1;
                 break;
             case ALLEGRO_KEY_ESCAPE:
                 game->isAlive=0;
@@ -20,7 +28,10 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
         }
     } else if (ev.type == ALLEGRO_EVENT_KEY_UP){
         if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT || ev.keyboard.keycode == ALLEGRO_KEY_RIGHT){
-            square->physics.acc=0;
+            square->physics.acc.x=0;
+        }
+        if (ev.keyboard.keycode == ALLEGRO_KEY_UP || ev.keyboard.keycode == ALLEGRO_KEY_DOWN){
+            square->physics.acc.y=0;
         }
     }
 }

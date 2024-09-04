@@ -72,6 +72,61 @@ void render(Game* game, Scene* scene){
     // HERE: MY FUNCTION TO MAKE THE RENDER MAGIC, CAMERA ETC
     GameObject* obj=scene->objects->first;
     while (obj!=NULL){
+        // PHYSICS PROCESS
+        if (obj->physics.enabled){
+            // if (obj->physics.speed <= obj->physics.maxSpeed){
+            //     obj->physics.speed+=obj->physics.acc-obj->physics.friction;
+            //     if (obj->physics.speed < 0){ 
+            //         obj->physics.speed=0; 
+            //         obj->physics.directions.x=0; 
+            //         obj->physics.directions.y=0; 
+            //     }
+            // }
+            // else{
+            //     obj->physics.speed=obj->physics.maxSpeed;
+            // }
+            // if (obj->physics.acc == 0.){
+            //     obj->physics.speed-=obj->physics.friction;
+            // }
+
+            // SPEED BY ACCELERATION X
+            if (obj->physics.speed.x <= obj->physics.maxSpeed && obj->physics.speed.x >= -obj->physics.maxSpeed){
+                obj->physics.speed.x+=obj->physics.acc.x*obj->physics.directions.x-obj->physics.friction*obj->physics.directions.x;
+                if (obj->physics.acc.x == 0 && round(obj->physics.speed.x) == 0){
+                    obj->physics.speed.x=0;
+                    obj->physics.directions.x=0;
+                }
+            } else if (obj->physics.speed.x < 0){
+                obj->physics.speed.x=-obj->physics.maxSpeed;
+            } else{
+                obj->physics.speed.x=obj->physics.maxSpeed;
+            }
+
+            // SPEED BY ACCELERATION Y
+            if (obj->physics.speed.y <= obj->physics.maxSpeed && obj->physics.speed.y >= -obj->physics.maxSpeed){
+                obj->physics.speed.y+=obj->physics.acc.y*obj->physics.directions.y-obj->physics.friction*obj->physics.directions.y;
+                if (obj->physics.acc.y == 0 && round(obj->physics.speed.y) == 0){
+                    obj->physics.speed.y=0;
+                    obj->physics.directions.y=0;
+                }
+            } else if (obj->physics.speed.y < 0){
+                obj->physics.speed.y=-obj->physics.maxSpeed;
+            } else{
+                obj->physics.speed.y=obj->physics.maxSpeed;
+            }
+            
+            // GRAVITY
+            if (obj->physics.gravity){
+                obj->physics.gravitySpeed+=scene->gravityValue;
+                obj->y+=obj->physics.gravitySpeed;
+            }
+
+            // obj->x+=obj->physics.speed*obj->physics.directions.x;
+            // obj->y+=obj->physics.speed*obj->physics.directions.y;
+            obj->x+=obj->physics.speed.x;
+            obj->y+=obj->physics.speed.y;
+        }
+
         // IS OBJECT NOT VISIBLE IN CAMERA
         if (!((obj->x+obj->width > scene->camera.x && obj->x < scene->camera.x+game->windowX) && (obj->y+obj->height > scene->camera.y && obj->y < scene->camera.y+game->windowY))){
             obj=obj->next;
@@ -94,29 +149,6 @@ void render(Game* game, Scene* scene){
             y=fabs(y);
 
         //printf("Rendered cube at (%f, %f)\n", x, y);
-
-        // PHYSICS PROCESS
-        if (obj->physics.enabled){
-            if (obj->physics.speed <= obj->physics.maxSpeed){
-                obj->physics.speed+=obj->physics.acc-obj->physics.friction;
-                if (obj->physics.speed < 0){ obj->physics.speed=0; }
-            }
-            else{
-                obj->physics.speed=obj->physics.maxSpeed;
-            }
-            // if (obj->physics.acc == 0.){
-            //     obj->physics.speed-=obj->physics.friction;
-            // }
-            
-            // GRAVITY
-            if (obj->physics.gravity){
-                obj->physics.gravitySpeed+=scene->gravityValue;
-                obj->y+=obj->physics.gravitySpeed;
-            }
-
-            obj->x+=obj->physics.speed*obj->physics.directions.x;
-            obj->y+=obj->physics.speed*obj->physics.directions.y;
-        }
 
         switch (obj->type){
             case SOLID:
@@ -175,14 +207,16 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->height=height;
     newObj->color=color;
     newObj->next=NULL;
-    newObj->physics.acc=0;
+    newObj->physics.acc.x=0;
+    newObj->physics.acc.y=0;
     newObj->physics.enabled=0;
     newObj->physics.gravity=0;
     newObj->physics.directions.x=0;
     newObj->physics.directions.y=0;
     newObj->physics.friction=0;
     newObj->physics.maxSpeed=0;
-    newObj->physics.speed=0;
+    newObj->physics.speed.x=0;
+    newObj->physics.speed.y=0;
     newObj->physics.gravitySpeed=0;
     return newObj;
 }
