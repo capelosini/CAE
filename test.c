@@ -1,4 +1,5 @@
 #include "include/CAE.h"
+#include <allegro5/color.h>
 #include <stdio.h>
 
 GameObject* square;
@@ -56,8 +57,10 @@ int main(){
     Scene* mainScene = createScene(mainSceneScript);
     setEventFunction(game, handleEvent);
 
-    square = createGameObject(SOLID, 20, 20, 50, 50, al_map_rgb(0,0,0));
-    GameObject* square2 = createGameObject(SOLID, 300, 300, 50, 50, al_map_rgb(0,0,0));
+    square = createGameObject(SOLID, 20, 20, 50, 50);
+    GameObject* square2 = createGameObject(SOLID, 300, 300, 50, 50);
+    square->color=al_map_rgb(0, 255, 0);
+    square2->color=al_map_rgb(255, 0, 0);
     printf("LENGTH: %d\n", mainScene->objects->length);
     addGameObjectToScene(mainScene, square);
     printf("LENGTH: %d\n", mainScene->objects->length);

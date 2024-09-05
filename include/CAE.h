@@ -1,3 +1,6 @@
+#ifndef CAE_ENGINE_INIT
+#define CAE_ENGINE_INIT
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/keyboard.h>
@@ -6,7 +9,8 @@
 
 enum OBJECT_TYPE {
     SOLID,
-    SPRITE
+    SPRITE,
+    ANIMATED_SPRITE
 };
 
 typedef struct Vector2 Vector2;
@@ -92,6 +96,8 @@ void freeGameObjects(GameObject* obj);
 void freeGameObjectList(GameObjectList* list);
 Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
-GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, ALLEGRO_COLOR color);
+GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 void removeGameObjectFromScene(Scene* scene, int id);
+
+#endif

@@ -1,4 +1,5 @@
 #include "CAE.h"
+#include <allegro5/color.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -31,7 +32,7 @@ Game* initGame(GameConfig config){
     al_register_event_source(game->ev_queue, al_get_keyboard_event_source());
     al_register_event_source(game->ev_queue, al_get_mouse_event_source());
     al_register_event_source(game->ev_queue, al_get_timer_event_source(game->timer));
-    
+
     al_start_timer(game->timer);
 
     return game;
@@ -76,10 +77,10 @@ void render(Game* game, Scene* scene){
         if (obj->physics.enabled){
             // if (obj->physics.speed <= obj->physics.maxSpeed){
             //     obj->physics.speed+=obj->physics.acc-obj->physics.friction;
-            //     if (obj->physics.speed < 0){ 
-            //         obj->physics.speed=0; 
-            //         obj->physics.directions.x=0; 
-            //         obj->physics.directions.y=0; 
+            //     if (obj->physics.speed < 0){
+            //         obj->physics.speed=0;
+            //         obj->physics.directions.x=0;
+            //         obj->physics.directions.y=0;
             //     }
             // }
             // else{
@@ -114,7 +115,7 @@ void render(Game* game, Scene* scene){
             } else{
                 obj->physics.speed.y=obj->physics.maxSpeed;
             }
-            
+
             // GRAVITY
             if (obj->physics.gravity){
                 obj->physics.gravitySpeed+=scene->gravityValue;
@@ -198,14 +199,14 @@ void freeScene(Scene* scene){
     free(scene);
 }
 
-GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, ALLEGRO_COLOR color){
+GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height){
     GameObject* newObj = (GameObject*)malloc(sizeof(GameObject));
     newObj->type=type;
     newObj->x=x;
     newObj->y=y;
     newObj->width=width;
     newObj->height=height;
-    newObj->color=color;
+    newObj->color=al_map_rgb(0, 0, 0);
     newObj->next=NULL;
     newObj->physics.acc.x=0;
     newObj->physics.acc.y=0;
