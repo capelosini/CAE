@@ -51,7 +51,6 @@ struct GameObject{
     PhysicsConfig physics;
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
-    GameObject* next;
 };
 
 typedef struct LinkedItem LinkedItem;

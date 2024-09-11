@@ -258,7 +258,6 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->width=width;
     newObj->height=height;
     newObj->color=al_map_rgb(0, 0, 0);
-    newObj->next=NULL;
     newObj->physics.acc.x=0;
     newObj->physics.acc.y=0;
     newObj->physics.enabled=0;
