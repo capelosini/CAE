@@ -67,6 +67,8 @@ int main(){
     addGameObjectToScene(mainScene, square2);
     printf("LENGTH: %d\n", mainScene->objects->length);
 
+    printList(mainScene->objects);
+
     square->physics.enabled=1;
     square->physics.friction=0.4;
     square->physics.maxSpeed=5;

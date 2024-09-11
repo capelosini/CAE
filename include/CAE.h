@@ -54,12 +54,25 @@ struct GameObject{
     GameObject* next;
 };
 
-typedef struct GameObjectList GameObjectList;
-struct GameObjectList{
-    GameObject* first;
-    GameObject* last;
-    int length;
+typedef struct LinkedItem LinkedItem;
+struct LinkedItem{
+    LinkedItem* next;
+    void* data;
 };
+
+typedef struct LinkedList LinkedList;
+struct LinkedList{
+    int length;
+    LinkedItem* first;
+    LinkedItem* last;
+};
+
+// typedef struct GameObjectList GameObjectList;
+// struct GameObjectList{
+//     GameObject* first;
+//     GameObject* last;
+//     int length;
+// };
 
 typedef struct GameCamera GameCamera;
 struct GameCamera{
@@ -70,7 +83,7 @@ struct GameCamera{
 typedef struct Scene Scene;
 struct Scene{
     GameCamera camera;
-    GameObjectList* objects;
+    LinkedList* objects;
     void (*scriptFunction)(Scene*);
     float gravityValue;
 };
@@ -91,13 +104,17 @@ void freeGame(Game* game);
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game*));
 void render(Game* game, Scene* scene);
-GameObjectList* createGameObjectList();
-void freeGameObjects(GameObject* obj);
-void freeGameObjectList(GameObjectList* list);
+// GameObjectList* createGameObjectList();
+LinkedList* createLinkedList();
+void freeLinkedListItems(LinkedItem* item);
+void freeLinkedList(LinkedList* list);
+void addItemToLinkedList(LinkedList* list, void* data);
+void printList(LinkedList* list);
+// void freeGameObjects(GameObject* obj);
+// void freeGameObjectList(GameObjectList* list);
 Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
-void removeGameObjectFromScene(Scene* scene, int id);
 
 #endif

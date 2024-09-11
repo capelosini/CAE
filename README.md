@@ -4,7 +4,7 @@
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 
 ## TODO:
-- [ ] Transform the current Game Object Linked List to a generic Linked List and their operations too, so that you can use Linked Lists for other cases like fonts or UI elements.
+- [ ] In Progress: Transform the current Game Object Linked List to a generic Linked List and their operations too, so that you can use Linked Lists for other cases like fonts or UI elements.
 - [ ] Add a way to detect collisions and stop the object from moving inside other objects that have collision enabled too, also put in the game object struct the collision side.
 - [ ] Add a UI layer control to use inside a Scene.
 

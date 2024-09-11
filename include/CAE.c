@@ -71,8 +71,9 @@ void render(Game* game, Scene* scene){
     scene->scriptFunction(scene);
 
     // HERE: MY FUNCTION TO MAKE THE RENDER MAGIC, CAMERA ETC
-    GameObject* obj=scene->objects->first;
-    while (obj!=NULL){
+    LinkedItem* item=scene->objects->first;
+    while (item!=NULL){
+        GameObject* obj=item->data;
         // PHYSICS PROCESS
         if (obj->physics.enabled){
             // if (obj->physics.speed <= obj->physics.maxSpeed){
@@ -130,7 +131,7 @@ void render(Game* game, Scene* scene){
 
         // IS OBJECT NOT VISIBLE IN CAMERA
         if (!((obj->x+obj->width > scene->camera.x && obj->x < scene->camera.x+game->windowX) && (obj->y+obj->height > scene->camera.y && obj->y < scene->camera.y+game->windowY))){
-            obj=obj->next;
+            item=item->next;
             continue;
         }
         float x;
@@ -158,35 +159,85 @@ void render(Game* game, Scene* scene){
             default:
                 break;
         }
-        obj=obj->next;
+        item=item->next;
     }
     al_flip_display();
 }
 
-GameObjectList* createGameObjectList(){
-    GameObjectList* list = (GameObjectList*)malloc(sizeof(GameObjectList));
+// GameObjectList* createGameObjectList(){
+//     GameObjectList* list = (GameObjectList*)malloc(sizeof(GameObjectList));
+//     list->first=NULL;
+//     list->last=NULL;
+//     list->length=0;
+//     return list;
+// }
+
+LinkedList* createLinkedList(){
+    LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
+    list->length=0;
     list->first=NULL;
     list->last=NULL;
-    list->length=0;
     return list;
 }
 
-void freeGameObjects(GameObject* obj){
-    if (obj == NULL)
+void freeLinkedListItems(LinkedItem* item){
+    if (item == NULL){
         return;
-    freeGameObjects(obj->next);
-    free(obj);
-    printf("Freed 1 Game Object!\n");
+    }
+    freeLinkedListItems(item->next);
+    free(item->data);
+    free(item);
+    printf("\nFreed item!");
 }
 
-void freeGameObjectList(GameObjectList* list){
-    freeGameObjects(list->first);
+void freeLinkedList(LinkedList* list){
+    freeLinkedListItems(list->first);
     free(list);
+    printf("\n");
 }
+
+void addItemToLinkedList(LinkedList* list, void* data){
+    list->length++;
+    LinkedItem* newItem = (LinkedItem*)malloc(sizeof(LinkedItem));
+    newItem->next=NULL;
+    newItem->data=data;
+    // IF FIRST OBJECT IN LIST
+    if (list->first == NULL && list->last == NULL){
+        list->first=newItem;
+        list->last=newItem;
+        return;
+    }
+    // IF IS NOT THE FIRST OBJECT
+    list->last->next=newItem;
+    list->last=newItem;
+}
+
+void printList(LinkedList* list){
+    printf("\n_LENGTH: %d_", list->length);
+    LinkedItem* i = list->first;
+    while (i != NULL){
+        printf("\n(%p) -> %p", i, i->next);
+        i=i->next;
+    }
+    printf("\n");
+}
+
+// void freeGameObjects(GameObject* obj){
+//     if (obj == NULL)
+//         return;
+//     freeGameObjects(obj->next);
+//     free(obj);
+//     printf("Freed 1 Game Object!\n");
+// }
+
+// void freeGameObjectList(GameObjectList* list){
+//     freeGameObjects(list->first);
+//     free(list);
+// }
 
 Scene* createScene(void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
-    scene->objects = createGameObjectList();
+    scene->objects = createLinkedList();
     scene->camera.x=0.;
     scene->camera.y=0.;
     scene->scriptFunction=scriptFunction;
@@ -195,7 +246,7 @@ Scene* createScene(void (*scriptFunction)(Scene*)){
 }
 
 void freeScene(Scene* scene){
-    freeGameObjectList(scene->objects);
+    freeLinkedList(scene->objects);
     free(scene);
 }
 
@@ -223,50 +274,5 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
 }
 
 void addGameObjectToScene(Scene* scene, GameObject* obj){
-    scene->objects->length++;
-
-    // IF FIRST OBJECT IN LIST
-    if (scene->objects->first == NULL && scene->objects->last == NULL){
-        scene->objects->first=obj;
-        scene->objects->last=obj;
-        return;
-    }
-    // IF IS NOT THE FIRST OBJECT
-    scene->objects->last->next=obj;
-    scene->objects->last=obj;
-    if (obj->next != NULL){
-        printf("WARNING: Added maybe an object from other list or the same, this is strange!");
-        free(obj->next);
-        obj->next=NULL;
-    }
-    //printf("First: %p\nLast: %p\nOBJ: %p\nOBJ->NEXT: %p\n\n", scene->objects->first, scene->objects->last, obj, obj->next);
-}
-
-void removeGameObjectFromScene(Scene* scene, int id){
-    if (id<0 || id >= scene->objects->length){
-        return;
-    } else if (id == 0){
-        GameObject* tmp = scene->objects->first;
-        scene->objects->first=tmp->next;
-        free(tmp);
-        if (scene->objects->first == NULL){
-            scene->objects->last=NULL;
-        }
-    } else{
-        int i=0;
-        GameObject* obj = scene->objects->first;
-        while (obj != NULL){
-            if (i == id-1){
-                GameObject* toDel = obj->next;
-                if (toDel->next == NULL)
-                    scene->objects->last=obj;
-                obj->next=toDel->next;
-                free(toDel);
-                break;
-            }
-            i++;
-            obj=obj->next;
-        }
-    }
-    scene->objects->length--;
+    addItemToLinkedList(scene->objects, obj);
 }
