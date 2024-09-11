@@ -308,3 +308,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
 void addGameObjectToScene(Scene* scene, GameObject* obj){
     addItemToLinkedList(scene->objects, obj);
 }
+
+float dist(GameObject* a, GameObject* b){
+    return sqrt(pow((a->x+a->width/2) - (b->x+b->width/2), 2) + pow((a->y+a->height/2) - (b->y+b->height/2), 2));
+}

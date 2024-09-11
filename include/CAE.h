@@ -117,5 +117,6 @@ Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
+float dist(GameObject* a, GameObject* b);
 
 #endif
