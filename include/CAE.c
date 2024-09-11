@@ -180,13 +180,17 @@ LinkedList* createLinkedList(){
     return list;
 }
 
+void freeLinkedItem(LinkedItem* item){
+    free(item->data);
+    free(item);
+}
+
 void freeLinkedListItems(LinkedItem* item){
     if (item == NULL){
         return;
     }
     freeLinkedListItems(item->next);
-    free(item->data);
-    free(item);
+    freeLinkedItem(item);
     printf("\nFreed item!");
 }
 
@@ -210,6 +214,35 @@ void addItemToLinkedList(LinkedList* list, void* data){
     // IF IS NOT THE FIRST OBJECT
     list->last->next=newItem;
     list->last=newItem;
+}
+
+void removeItemLinkedList(LinkedList* list, void* searchData){
+    LinkedItem* item = list->first;
+    // EMPTY LIST
+    if (list->first == NULL && list->last == NULL)
+        return;
+    // FIRST ITEM
+    else if (item->data == searchData){
+        list->first=item->next;
+        if (list->last == item)
+            list->last=NULL;
+        freeLinkedItem(item);
+        list->length--;
+        return;
+    }
+    while (item != NULL){
+        if (item->next->data == searchData){
+            LinkedItem* itemToExclude = item->next;
+            item->next=itemToExclude->next;
+            freeLinkedItem(itemToExclude);
+            if (item->next == NULL){
+                list->last=item;
+            }
+            list->length--;
+            return;
+        }
+        item=item->next;
+    }
 }
 
 void printList(LinkedList* list){
