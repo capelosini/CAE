@@ -3,6 +3,7 @@
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_image.h>
 #include <allegro5/keyboard.h>
 #include <allegro5/mouse.h>
 #include <stdlib.h>
@@ -42,6 +43,16 @@ struct PhysicsConfig{
     float gravitySpeed;
 };
 
+typedef struct AnimationProps AnimationProps;
+struct AnimationProps{
+    int width;
+    int height;
+    Vector2 index;
+    int totalFrames;
+    float fps;
+    ALLEGRO_BITMAP* bitmap;
+};
+
 typedef struct GameObject GameObject;
 struct GameObject{
     float x;
@@ -51,6 +62,7 @@ struct GameObject{
     PhysicsConfig physics;
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
+    AnimationProps animation;
 };
 
 typedef struct LinkedItem LinkedItem;
@@ -64,6 +76,7 @@ struct LinkedList{
     int length;
     LinkedItem* first;
     LinkedItem* last;
+    void (*onDestroy)(LinkedItem* item);
 };
 
 // typedef struct GameObjectList GameObjectList;
@@ -96,17 +109,19 @@ struct Game{
     int windowX;
     int windowY;
     void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
+    LinkedList* bitmaps;
 };
 
+void destroyBitmaps(LinkedItem* item);
 Game* initGame(GameConfig config);
 void freeGame(Game* game);
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game*));
 void render(Game* game, Scene* scene);
 // GameObjectList* createGameObjectList();
-LinkedList* createLinkedList();
+LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
 void freeLinkedItem(LinkedItem* item);
-void freeLinkedListItems(LinkedItem* item);
+void freeLinkedListItems(LinkedItem* item, LinkedList* list);
 void freeLinkedList(LinkedList* list);
 void addItemToLinkedList(LinkedList* list, void* data);
 void removeItemLinkedList(LinkedList* list, void* searchData);
@@ -116,6 +131,8 @@ void printList(LinkedList* list);
 Scene* createScene(void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
+ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap);
+void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 float dist(GameObject* a, GameObject* b);
 

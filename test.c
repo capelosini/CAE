@@ -41,9 +41,9 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
 void mainSceneScript(Scene* self){
     al_clear_to_color(al_map_rgb(255, 255, 255));
     if (dist(square, square2) <= square->width/2. + square2->width/2.){
-        printf("\nColliding");
+        //printf("\nColliding");
     } else{
-        printf("\nNot Colliding");
+        //printf("\nNot Colliding");
     }
     //self->camera.x+=1;
     //self->camera.y-=1;
@@ -63,15 +63,18 @@ int main(){
     Scene* mainScene = createScene(mainSceneScript);
     setEventFunction(game, handleEvent);
 
+    ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demoBitmap.png");
+
     square = createGameObject(SOLID, 20, 20, 50, 50);
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
+    GameObject* square3 = createGameObject(ANIMATED_SPRITE, 500, 500, 50, 50);
+    setGameObjectAnimation(square3, demoBitmap, 102, 102, 6, 20);
+
     square->color=al_map_rgb(0, 255, 0);
     square2->color=al_map_rgb(255, 0, 0);
-    printf("LENGTH: %d\n", mainScene->objects->length);
     addGameObjectToScene(mainScene, square);
-    printf("LENGTH: %d\n", mainScene->objects->length);
     addGameObjectToScene(mainScene, square2);
-    printf("LENGTH: %d\n", mainScene->objects->length);
+    addGameObjectToScene(mainScene, square3);
 
     printList(mainScene->objects);
 
@@ -81,6 +84,7 @@ int main(){
     //square->physics.gravity=1;
 
     while (game->isAlive){
+        al_draw_bitmap_region(demoBitmap, 0, 0, 102, 102, 400, 400, 0);
         render(game, mainScene);
     }
 

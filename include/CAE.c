@@ -3,9 +3,16 @@
 #include <stdio.h>
 #include <math.h>
 
+void destroyBitmaps(LinkedItem* item){
+    al_destroy_bitmap((ALLEGRO_BITMAP*)item->data);
+    item->data=NULL;
+    printf("\nFreed a bitmap!");
+}
+
 Game* initGame(GameConfig config){
     al_init();
     al_init_primitives_addon();
+    al_init_image_addon();
     al_install_keyboard();
     al_install_mouse();
     Game* game = (Game*)malloc(sizeof(Game));
@@ -27,6 +34,7 @@ Game* initGame(GameConfig config){
     game->ev_queue = al_create_event_queue();
     game->timer = al_create_timer(1.0 / config.fps);
     game->isAlive = 1;
+    game->bitmaps = createLinkedList(destroyBitmaps);
 
     al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
     al_register_event_source(game->ev_queue, al_get_keyboard_event_source());
@@ -45,6 +53,7 @@ void freeGame(Game* game){
     al_shutdown_primitives_addon();
     al_uninstall_keyboard();
     al_uninstall_mouse();
+    freeLinkedList(game->bitmaps);
     free(game);
 }
 
@@ -157,6 +166,12 @@ void render(Game* game, Scene* scene){
             case SOLID:
                 al_draw_filled_rectangle(x, y, x+obj->width, y+obj->height, obj->color);
                 break;
+            case ANIMATED_SPRITE:
+                if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
+                    obj->animation.index.x=0;
+                al_draw_bitmap_region(obj->animation.bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, 0);
+                obj->animation.index.x+=obj->animation.fps;
+                break;
             default:
                 break;
         }
@@ -173,11 +188,12 @@ void render(Game* game, Scene* scene){
 //     return list;
 // }
 
-LinkedList* createLinkedList(){
+LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item)){
     LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
     list->length=0;
     list->first=NULL;
     list->last=NULL;
+    list->onDestroy=onDestroy;
     return list;
 }
 
@@ -186,17 +202,19 @@ void freeLinkedItem(LinkedItem* item){
     free(item);
 }
 
-void freeLinkedListItems(LinkedItem* item){
+void freeLinkedListItems(LinkedItem* item, LinkedList* list){
     if (item == NULL){
         return;
     }
-    freeLinkedListItems(item->next);
+    freeLinkedListItems(item->next, list);
+    if (list->onDestroy != NULL)
+        list->onDestroy(item);
     freeLinkedItem(item);
     printf("\nFreed item!");
 }
 
 void freeLinkedList(LinkedList* list){
-    freeLinkedListItems(list->first);
+    freeLinkedListItems(list->first, list);
     free(list);
     printf("\n");
 }
@@ -271,7 +289,7 @@ void printList(LinkedList* list){
 
 Scene* createScene(void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
-    scene->objects = createLinkedList();
+    scene->objects = createLinkedList(NULL);
     scene->camera.x=0.;
     scene->camera.y=0.;
     scene->scriptFunction=scriptFunction;
@@ -303,7 +321,28 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->physics.speed.x=0;
     newObj->physics.speed.y=0;
     newObj->physics.gravitySpeed=0;
+    newObj->animation.bitmap=NULL;
     return newObj;
+}
+
+ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap){
+    ALLEGRO_BITMAP* bm = al_load_bitmap(pathToBitmap);
+    addItemToLinkedList(game->bitmaps, bm);
+    return bm;
+}
+
+void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps){
+    if (obj->type != ANIMATED_SPRITE)
+       return;
+    obj->animation.bitmap = bitmap;
+    obj->animation.index.x=0;
+    obj->animation.index.y=0;
+    obj->width=frameWidth;
+    obj->height=frameHeight;
+    obj->animation.totalFrames=totalFrames;
+    obj->animation.fps=fps;
+    if (fps > 0)
+        obj->animation.fps/=100;
 }
 
 void addGameObjectToScene(Scene* scene, GameObject* obj){
