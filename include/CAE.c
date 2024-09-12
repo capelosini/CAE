@@ -74,6 +74,8 @@ void render(Game* game, Scene* scene){
     LinkedItem* item=scene->objects->first;
     while (item!=NULL){
         GameObject* obj=item->data;
+        float x;
+        float y;
         // PHYSICS PROCESS
         if (obj->physics.enabled){
             // if (obj->physics.speed <= obj->physics.maxSpeed){
@@ -134,8 +136,7 @@ void render(Game* game, Scene* scene){
             item=item->next;
             continue;
         }
-        float x;
-        float y;
+        // TRANSFORM THE GLOBAL POSITION OF EVERYTHING IN LOCAL POSITION
         if (obj->x < 0 && scene->camera.x < 0)
             x=fabs(obj->x) - fabs(scene->camera.x);
         else
@@ -310,5 +311,5 @@ void addGameObjectToScene(Scene* scene, GameObject* obj){
 }
 
 float dist(GameObject* a, GameObject* b){
-    return sqrt(pow((a->x+a->width/2) - (b->x+b->width/2), 2) + pow((a->y+a->height/2) - (b->y+b->height/2), 2));
+    return sqrt(pow((a->x+a->width/2.) - (b->x+b->width/2.), 2) + pow((a->y+a->height/2.) - (b->y+b->height/2.), 2));
 }

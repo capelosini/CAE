@@ -40,7 +40,7 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
 
 void mainSceneScript(Scene* self){
     al_clear_to_color(al_map_rgb(255, 255, 255));
-    if (dist(square, square2) <= square->width/2 + square2->width/2){
+    if (dist(square, square2) <= square->width/2. + square2->width/2.){
         printf("\nColliding");
     } else{
         printf("\nNot Colliding");
