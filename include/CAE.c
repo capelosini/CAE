@@ -76,6 +76,9 @@ void render(Game* game, Scene* scene){
         game->eventFunction(ev, scene, game);
     } while(!al_is_event_queue_empty(game->ev_queue));
 
+
+    al_clear_to_color(scene->backgroundColor);
+
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
     scene->scriptFunction(scene);
 
@@ -169,6 +172,7 @@ void render(Game* game, Scene* scene){
             case ANIMATED_SPRITE:
                 if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
                     obj->animation.index.x=0;
+                //printf("Index: %d\n", obj->animation.width);
                 al_draw_bitmap_region(obj->animation.bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, 0);
                 obj->animation.index.x+=obj->animation.fps;
                 break;
@@ -294,6 +298,7 @@ Scene* createScene(void (*scriptFunction)(Scene*)){
     scene->camera.y=0.;
     scene->scriptFunction=scriptFunction;
     scene->gravityValue=0.1;
+    scene->backgroundColor=al_map_rgb(30, 30, 30);
     return scene;
 }
 
@@ -337,12 +342,16 @@ void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWi
     obj->animation.bitmap = bitmap;
     obj->animation.index.x=0;
     obj->animation.index.y=0;
-    obj->width=frameWidth;
-    obj->height=frameHeight;
+    obj->animation.width=frameWidth;
+    obj->animation.height=frameHeight;
     obj->animation.totalFrames=totalFrames;
     obj->animation.fps=fps;
     if (fps > 0)
         obj->animation.fps/=100;
+}
+
+void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color){
+    al_convert_mask_to_alpha(bm, color);
 }
 
 void addGameObjectToScene(Scene* scene, GameObject* obj){

@@ -98,6 +98,7 @@ struct Scene{
     LinkedList* objects;
     void (*scriptFunction)(Scene*);
     float gravityValue;
+    ALLEGRO_COLOR backgroundColor;
 };
 
 typedef struct Game Game;
@@ -133,6 +134,7 @@ void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
 ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap);
 void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
+void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 float dist(GameObject* a, GameObject* b);
 
