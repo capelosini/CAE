@@ -64,6 +64,7 @@ struct GameObject{
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
     AnimationProps animation;
+    unsigned char collisionEnabled;
 };
 
 typedef struct LinkedItem LinkedItem;
@@ -138,5 +139,6 @@ void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWi
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 float dist(GameObject* a, GameObject* b);
+char checkCollision(GameObject* a, GameObject* b);
 
 #endif

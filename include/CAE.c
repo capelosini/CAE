@@ -85,25 +85,10 @@ void render(Game* game, Scene* scene){
     LinkedItem* item=scene->objects->first;
     while (item!=NULL){
         GameObject* obj=item->data;
-        float x;
-        float y;
+        float x=obj->x;
+        float y=obj->y;
         // PHYSICS PROCESS
         if (obj->physics.enabled){
-            // if (obj->physics.speed <= obj->physics.maxSpeed){
-            //     obj->physics.speed+=obj->physics.acc-obj->physics.friction;
-            //     if (obj->physics.speed < 0){
-            //         obj->physics.speed=0;
-            //         obj->physics.directions.x=0;
-            //         obj->physics.directions.y=0;
-            //     }
-            // }
-            // else{
-            //     obj->physics.speed=obj->physics.maxSpeed;
-            // }
-            // if (obj->physics.acc == 0.){
-            //     obj->physics.speed-=obj->physics.friction;
-            // }
-
             // SPEED BY ACCELERATION X
             if (obj->physics.speed.x <= obj->physics.maxSpeed && obj->physics.speed.x >= -obj->physics.maxSpeed){
                 obj->physics.speed.x+=obj->physics.acc.x*obj->physics.directions.x-obj->physics.friction*obj->physics.directions.x;
@@ -133,13 +118,34 @@ void render(Game* game, Scene* scene){
             // GRAVITY
             if (obj->physics.gravity){
                 obj->physics.gravitySpeed+=scene->gravityValue;
-                obj->y+=obj->physics.gravitySpeed;
+                y+=obj->physics.gravitySpeed;
             }
 
             // obj->x+=obj->physics.speed*obj->physics.directions.x;
             // obj->y+=obj->physics.speed*obj->physics.directions.y;
-            obj->x+=obj->physics.speed.x;
-            obj->y+=obj->physics.speed.y;
+            x+=obj->physics.speed.x;
+            y+=obj->physics.speed.y;
+        }
+
+        // COLLISIONS
+        unsigned char hasCollision=0;
+        if (obj->collisionEnabled){
+            LinkedItem* item2 = scene->objects->first;
+            while (item2!=NULL){
+                GameObject* obj2 = item2->data;
+                if (obj2->collisionEnabled && obj2!=obj){
+                    if (x+obj->width > obj2->x && x < obj2->x+obj2->width && y+obj->height > obj2->y && y < obj2->y+obj2->height){
+                        hasCollision=1;
+                        break;
+                    }
+                }
+                item2=item2->next;
+            }
+        }
+
+        if (!hasCollision){
+            obj->x=x;
+            obj->y=y;
         }
 
         // IS OBJECT NOT VISIBLE IN CAMERA
@@ -147,19 +153,20 @@ void render(Game* game, Scene* scene){
             item=item->next;
             continue;
         }
-        // TRANSFORM THE GLOBAL POSITION OF EVERYTHING IN LOCAL POSITION
-        if (obj->x < 0 && scene->camera.x < 0)
-            x=fabs(obj->x) - fabs(scene->camera.x);
-        else
-            x=obj->x - scene->camera.x;
-        if (obj->y < 0 && scene->camera.y < 0)
-            y=fabs(obj->y) - fabs(scene->camera.y);
-        else
-            y=obj->y - scene->camera.y;
 
-        if (obj->x > scene->camera.x)
+        // TRANSFORM THE GLOBAL POSITION OF EVERYTHING IN LOCAL POSITION
+        if (x < 0 && scene->camera.x < 0)
+            x=fabs(x) - fabs(scene->camera.x);
+        else
+            x-=scene->camera.x;
+        if (y < 0 && scene->camera.y < 0)
+            y=fabs(y) - fabs(scene->camera.y);
+        else
+            y-=scene->camera.y;
+
+        if (x > scene->camera.x)
             x=fabs(x);
-        if (obj->y > scene->camera.y)
+        if (y > scene->camera.y)
             y=fabs(y);
 
         //printf("Rendered cube at (%f, %f)\n", x, y);
@@ -328,6 +335,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->animation.bitmap=NULL;
     newObj->animation.direction.x=1;
     newObj->animation.direction.y=1;
+    newObj->collisionEnabled=0;
     return newObj;
 }
 
@@ -361,4 +369,11 @@ void addGameObjectToScene(Scene* scene, GameObject* obj){
 
 float dist(GameObject* a, GameObject* b){
     return sqrt(pow((a->x+a->width/2.) - (b->x+b->width/2.), 2) + pow((a->y+a->height/2.) - (b->y+b->height/2.), 2));
+}
+
+char checkCollision(GameObject* a, GameObject* b){
+    int d = (int)dist(a,b);
+    if((d<=(a->width/2+b->width/2))||(d<=(a->height/2+b->height/2)))
+        return 1;
+    return 0;
 }

@@ -35,6 +35,16 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
             square->physics.acc.y=0;
         }
     }
+    //  if(checkCollision(square,square2))
+    //     {
+    //      if(square->physics.acc.x!=0)
+    //      square->physics.acc.x=-1; 
+    //       if(square->physics.acc.y!=0)
+    //      square->physics.acc.y=-1; 
+    //     } else{
+    //         square->physics.acc.x=abs(square->physics.acc.x);
+    //         square->physics.acc.y=abs(square->physics.acc.y);
+    //     }
 }
 
 void mainSceneScript(Scene* self){
@@ -65,7 +75,9 @@ int main(){
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(SOLID, 20, 20, 50, 50);
+    square->collisionEnabled=1;
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
+    square2->collisionEnabled=1;
     GameObject* square3 = createGameObject(ANIMATED_SPRITE, 500, 500, 50, 50);
     setGameObjectAnimation(square3, demoBitmap, 108, 140, 4, 20);
 
