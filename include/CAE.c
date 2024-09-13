@@ -1,5 +1,4 @@
 #include "CAE.h"
-#include <allegro5/color.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -173,7 +172,7 @@ void render(Game* game, Scene* scene){
                 if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
                     obj->animation.index.x=0;
                 //printf("Index: %d\n", obj->animation.width);
-                al_draw_bitmap_region(obj->animation.bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, 0);
+                al_draw_scaled_bitmap(obj->animation.bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
                 obj->animation.index.x+=obj->animation.fps;
                 break;
             default:
@@ -327,6 +326,8 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->physics.speed.y=0;
     newObj->physics.gravitySpeed=0;
     newObj->animation.bitmap=NULL;
+    newObj->animation.direction.x=1;
+    newObj->animation.direction.y=1;
     return newObj;
 }
 

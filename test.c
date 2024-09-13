@@ -1,12 +1,11 @@
 #include "include/CAE.h"
-#include <allegro5/color.h>
 #include <stdio.h>
 
 GameObject* square;
 GameObject* square2;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
-    if (ev.type == ALLEGRO_EVENT_KEY_CHAR){
+    if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
         switch (ev.keyboard.keycode){
             case ALLEGRO_KEY_LEFT:
                 square->physics.directions.x=-1;

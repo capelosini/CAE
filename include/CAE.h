@@ -51,6 +51,7 @@ struct AnimationProps{
     int totalFrames;
     float fps;
     ALLEGRO_BITMAP* bitmap;
+    Vector2 direction;
 };
 
 typedef struct GameObject GameObject;
