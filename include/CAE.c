@@ -134,8 +134,17 @@ void render(Game* game, Scene* scene){
             while (item2!=NULL){
                 GameObject* obj2 = item2->data;
                 if (obj2->collisionEnabled && obj2!=obj){
-                    if (x+obj->width > obj2->x && x < obj2->x+obj2->width && y+obj->height > obj2->y && y < obj2->y+obj2->height){
-                        hasCollision=1;
+                    switch(obj->collisionType){
+                        case COLLISION_RECT:
+                            hasCollision=checkCollisionRect(x, y, obj->width, obj->height, obj2->x, obj2->y, obj2->width, obj2->height);
+                            break;
+                        case COLLISION_CIRCLE:
+                            hasCollision=checkCollisionCircle(x, y, obj->width, obj->height, obj2->x, obj2->y, obj2->width, obj2->height);
+                            break;
+                        default:
+                            break;
+                    }
+                    if (hasCollision){
                         break;
                     }
                 }
@@ -336,6 +345,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->animation.direction.x=1;
     newObj->animation.direction.y=1;
     newObj->collisionEnabled=0;
+    newObj->collisionType=COLLISION_RECT;
     return newObj;
 }
 
@@ -367,13 +377,21 @@ void addGameObjectToScene(Scene* scene, GameObject* obj){
     addItemToLinkedList(scene->objects, obj);
 }
 
-float dist(GameObject* a, GameObject* b){
-    return sqrt(pow((a->x+a->width/2.) - (b->x+b->width/2.), 2) + pow((a->y+a->height/2.) - (b->y+b->height/2.), 2));
+// float dist(GameObject* a, GameObject* b){
+//     return sqrt(pow((a->x+a->width/2.) - (b->x+b->width/2.), 2) + pow((a->y+a->height/2.) - (b->y+b->height/2.), 2));
+// }
+
+float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
+    return sqrt(pow((x1+w1/2.) - (x2+w2/2.), 2) + pow((y1+h1/2.) - (y2+h2/2.), 2));
 }
 
-char checkCollision(GameObject* a, GameObject* b){
-    int d = (int)dist(a,b);
-    if((d<=(a->width/2+b->width/2))||(d<=(a->height/2+b->height/2)))
+char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
+    int d = (int)dist(x1, y1, w1, h1, x2, y2, w2, h2);
+    if((d<=(w1/2+w2/2))||(d<=(h1/2+h2/2)))
         return 1;
     return 0;
+}
+
+char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
+    return x1+w1 > x2 && x1 < x2+w2 && y1+h1 > y2 && y1 < y2+h2;
 }

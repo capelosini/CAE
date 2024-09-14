@@ -48,11 +48,6 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
 }
 
 void mainSceneScript(Scene* self){
-    if (dist(square, square2) <= square->width/2. + square2->width/2.){
-        //printf("\nColliding");
-    } else{
-        //printf("\nNot Colliding");
-    }
     //self->camera.x+=1;
     //self->camera.y-=1;
 }
@@ -75,10 +70,10 @@ int main(){
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(SOLID, 20, 20, 50, 50);
-    square->collisionEnabled=1;
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
-    square2->collisionEnabled=1;
     GameObject* square3 = createGameObject(ANIMATED_SPRITE, 500, 500, 50, 50);
+    square->collisionEnabled=1;
+    square2->collisionEnabled=1;
     setGameObjectAnimation(square3, demoBitmap, 108, 140, 4, 20);
 
     square->color=al_map_rgb(0, 255, 0);

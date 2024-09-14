@@ -14,6 +14,11 @@ enum OBJECT_TYPE {
     ANIMATED_SPRITE
 };
 
+enum COLLISION_TYPE {
+    COLLISION_RECT,
+    COLLISION_CIRCLE
+};
+
 typedef struct Vector2 Vector2;
 struct Vector2{
     float x;
@@ -65,6 +70,7 @@ struct GameObject{
     enum OBJECT_TYPE type;
     AnimationProps animation;
     unsigned char collisionEnabled;
+    enum COLLISION_TYPE collisionType;
 };
 
 typedef struct LinkedItem LinkedItem;
@@ -138,7 +144,8 @@ ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap);
 void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
-float dist(GameObject* a, GameObject* b);
-char checkCollision(GameObject* a, GameObject* b);
+float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 
 #endif
