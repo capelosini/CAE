@@ -96,8 +96,11 @@ struct LinkedList{
 
 typedef struct GameCamera GameCamera;
 struct GameCamera{
-    float x;
-    float y;
+    Vector2 offset;
+    GameObject* followTarget;
+    Vector2 followSpeed;
+    float followMaxSpeed;
+    float followAcc;
 };
 
 typedef struct Scene Scene;

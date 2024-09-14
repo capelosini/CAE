@@ -81,6 +81,46 @@ void render(Game* game, Scene* scene){
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
     scene->scriptFunction(scene);
 
+    // CAMERA FOLLOW ACTION
+    if (scene->camera.followTarget != NULL){
+        char dirX=0;
+        char dirY=0;
+        int viewX=scene->camera.offset.x+game->windowX/2;
+        int viewY=scene->camera.offset.y+game->windowY/2;
+        int targetX=scene->camera.followTarget->x+scene->camera.followTarget->width/2;
+        int targetY=scene->camera.followTarget->y+scene->camera.followTarget->height/2;
+        int difX=abs(targetX-viewX);
+        int difY=abs(targetY-viewY);
+
+        if (targetX > viewX && difX > 3){
+            dirX=1;
+        } else if(targetX < viewX && difX > 3){
+            dirX=-1;
+        } else{
+            scene->camera.followSpeed.x=0;
+        }
+        if (targetY > viewY && difY > 3){
+            dirY=1;
+        } else if(targetY < viewY && difY > 3){
+            dirY=-1;
+        } else{
+            scene->camera.followSpeed.y=0;
+        }
+        if (scene->camera.followSpeed.x < scene->camera.followMaxSpeed){
+            scene->camera.followSpeed.x+=scene->camera.followAcc;
+        } else{
+            scene->camera.followSpeed.x=scene->camera.followMaxSpeed;
+        } 
+        if (scene->camera.followSpeed.y < scene->camera.followMaxSpeed){
+            scene->camera.followSpeed.y+=scene->camera.followAcc;
+        } else{
+            scene->camera.followSpeed.y=scene->camera.followMaxSpeed;
+        }
+
+        scene->camera.offset.x+=scene->camera.followSpeed.x*dirX;
+        scene->camera.offset.y+=scene->camera.followSpeed.y*dirY;
+    }
+
     // HERE: MY FUNCTION TO MAKE THE RENDER MAGIC, CAMERA ETC
     LinkedItem* item=scene->objects->first;
     while (item!=NULL){
@@ -158,24 +198,24 @@ void render(Game* game, Scene* scene){
         }
 
         // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!((obj->x+obj->width > scene->camera.x && obj->x < scene->camera.x+game->windowX) && (obj->y+obj->height > scene->camera.y && obj->y < scene->camera.y+game->windowY))){
+        if (!((obj->x+obj->width > scene->camera.offset.x && obj->x < scene->camera.offset.x+game->windowX) && (obj->y+obj->height > scene->camera.offset.y && obj->y < scene->camera.offset.y+game->windowY))){
             item=item->next;
             continue;
         }
 
         // TRANSFORM THE GLOBAL POSITION OF EVERYTHING IN LOCAL POSITION
-        if (x < 0 && scene->camera.x < 0)
-            x=fabs(x) - fabs(scene->camera.x);
+        if (x < 0 && scene->camera.offset.x < 0)
+            x=fabs(x) - fabs(scene->camera.offset.x);
         else
-            x-=scene->camera.x;
-        if (y < 0 && scene->camera.y < 0)
-            y=fabs(y) - fabs(scene->camera.y);
+            x-=scene->camera.offset.x;
+        if (y < 0 && scene->camera.offset.y < 0)
+            y=fabs(y) - fabs(scene->camera.offset.y);
         else
-            y-=scene->camera.y;
+            y-=scene->camera.offset.y;
 
-        if (x > scene->camera.x)
+        if (x > scene->camera.offset.x)
             x=fabs(x);
-        if (y > scene->camera.y)
+        if (y > scene->camera.offset.y)
             y=fabs(y);
 
         //printf("Rendered cube at (%f, %f)\n", x, y);
@@ -188,6 +228,10 @@ void render(Game* game, Scene* scene){
                 if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
                     obj->animation.index.x=0;
                 //printf("Index: %d\n", obj->animation.width);
+                if (obj->animation.direction.x<0)
+                    x+=fabs(obj->width*obj->animation.direction.x);
+                if (obj->animation.direction.y<0)
+                    y+=fabs(obj->height*obj->animation.direction.y);
                 al_draw_scaled_bitmap(obj->animation.bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
                 obj->animation.index.x+=obj->animation.fps;
                 break;
@@ -309,8 +353,12 @@ void printList(LinkedList* list){
 Scene* createScene(void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
     scene->objects = createLinkedList(NULL);
-    scene->camera.x=0.;
-    scene->camera.y=0.;
+    scene->camera.offset.x=0.;
+    scene->camera.offset.y=0.;
+    scene->camera.followTarget=NULL;
+    scene->camera.followAcc=0.1;
+    scene->camera.followSpeed.x=scene->camera.followSpeed.y=0;
+    scene->camera.followMaxSpeed=4;
     scene->scriptFunction=scriptFunction;
     scene->gravityValue=0.1;
     scene->backgroundColor=al_map_rgb(30, 30, 30);

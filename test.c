@@ -10,10 +10,12 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
             case ALLEGRO_KEY_LEFT:
                 square->physics.directions.x=-1;
                 square->physics.acc.x=1;
+                square->animation.direction.x=-1;
                 break;
             case ALLEGRO_KEY_RIGHT:
                 square->physics.directions.x=1;
                 square->physics.acc.x=1;
+                square->animation.direction.x=1;
                 break;
             case ALLEGRO_KEY_UP:
                 square->physics.directions.y=-1;
@@ -69,18 +71,20 @@ int main(){
     ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
-    square = createGameObject(SOLID, 20, 20, 50, 50);
+    square = createGameObject(ANIMATED_SPRITE, 500, 500, 50, 50);
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
-    GameObject* square3 = createGameObject(ANIMATED_SPRITE, 500, 500, 50, 50);
+    GameObject* square3 = createGameObject(SOLID, 20, 20, 50, 50);
     square->collisionEnabled=1;
     square2->collisionEnabled=1;
-    setGameObjectAnimation(square3, demoBitmap, 108, 140, 4, 20);
+    setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
 
-    square->color=al_map_rgb(0, 255, 0);
     square2->color=al_map_rgb(255, 0, 0);
+    square3->color=al_map_rgb(0, 255, 0);
     addGameObjectToScene(mainScene, square);
     addGameObjectToScene(mainScene, square2);
     addGameObjectToScene(mainScene, square3);
+
+    mainScene->camera.followTarget=square;
 
     printList(mainScene->objects);
 
