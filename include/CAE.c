@@ -32,8 +32,8 @@ Game* initGame(GameConfig config){
     }
 
     game->display = al_create_display(config.sizeX, config.sizeY);
-    game->windowX = config.sizeX;
-    game->windowY = config.sizeY;
+    game->displayWidth = config.sizeX;
+    game->displayHeight = config.sizeY;
     if (!config.fullscreen){
         al_set_window_position(game->display, config.posX, config.posY);
     }
@@ -84,6 +84,7 @@ void render(Game* game){
             game->isAlive=0;
             return;
         }
+
         if (scene != NULL && game->eventFunction != NULL)
             game->eventFunction(ev, scene, game);
     } while(!al_is_event_queue_empty(game->ev_queue));
@@ -101,8 +102,8 @@ void render(Game* game){
     if (scene->camera.followTarget != NULL){
         char dirX=0;
         char dirY=0;
-        int viewX=scene->camera.offset.x+game->windowX/2;
-        int viewY=scene->camera.offset.y+game->windowY/2;
+        int viewX=scene->camera.offset.x+game->displayWidth/2;
+        int viewY=scene->camera.offset.y+game->displayHeight/2;
         int targetX=scene->camera.followTarget->x+scene->camera.followTarget->width/2;
         int targetY=scene->camera.followTarget->y+scene->camera.followTarget->height/2;
         int difX=abs(targetX-viewX);
@@ -218,7 +219,7 @@ void render(Game* game){
         }
 
         // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!((obj->x+obj->width > scene->camera.offset.x && obj->x < scene->camera.offset.x+game->windowX) && (obj->y+obj->height > scene->camera.offset.y && obj->y < scene->camera.offset.y+game->windowY))){
+        if (!((obj->x+obj->width > scene->camera.offset.x && obj->x < scene->camera.offset.x+game->displayWidth) && (obj->y+obj->height > scene->camera.offset.y && obj->y < scene->camera.offset.y+game->displayHeight))){
             item=item->next;
             continue;
         }
@@ -244,6 +245,11 @@ void render(Game* game){
             case SOLID:
                 al_draw_filled_rectangle(x, y, x+obj->width, y+obj->height, obj->color);
                 break;
+            case SPRITE:
+                int w=al_get_bitmap_width(obj->bitmap);
+                int h=al_get_bitmap_height(obj->bitmap);
+                al_draw_scaled_bitmap(obj->bitmap, 0, 0, w, h, x, y, obj->width, obj->height, 0);
+                break;
             case ANIMATED_SPRITE:
                 if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
                     obj->animation.index.x=0;
@@ -252,7 +258,7 @@ void render(Game* game){
                     x+=fabs(obj->width*obj->animation.direction.x);
                 if (obj->animation.direction.y<0)
                     y+=fabs(obj->height*obj->animation.direction.y);
-                al_draw_scaled_bitmap(obj->animation.bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
+                al_draw_scaled_bitmap(obj->bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
                 obj->animation.index.x+=obj->animation.fps;
                 break;
             default:
@@ -411,7 +417,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->physics.speed.x=0;
     newObj->physics.speed.y=0;
     newObj->physics.gravitySpeed=0;
-    newObj->animation.bitmap=NULL;
+    newObj->bitmap=NULL;
     newObj->animation.direction.x=1;
     newObj->animation.direction.y=1;
     newObj->collisionEnabled=0;
@@ -428,7 +434,7 @@ ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap){
 void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps){
     if (obj->type != ANIMATED_SPRITE)
        return;
-    obj->animation.bitmap = bitmap;
+    obj->bitmap = bitmap;
     obj->animation.index.x=0;
     obj->animation.index.y=0;
     obj->animation.width=frameWidth;
@@ -468,4 +474,8 @@ char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float 
 
 void changeScene(Game* game, Scene* scene){
     game->currentScene=scene;
+}
+
+void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
+    obj->bitmap=bitmap;
 }

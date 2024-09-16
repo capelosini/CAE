@@ -55,7 +55,6 @@ struct AnimationProps{
     Vector2 index;
     int totalFrames;
     float fps;
-    ALLEGRO_BITMAP* bitmap;
     Vector2 direction;
 };
 
@@ -69,6 +68,7 @@ struct GameObject{
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
     AnimationProps animation;
+    ALLEGRO_BITMAP* bitmap;
     unsigned char collisionEnabled;
     enum COLLISION_TYPE collisionType;
 };
@@ -118,8 +118,8 @@ struct Game{
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *ev_queue;
     ALLEGRO_TIMER *timer;
-    int windowX;
-    int windowY;
+    int displayWidth;
+    int displayHeight;
     void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
     LinkedList* bitmaps;
     LinkedList* scenes;
@@ -153,5 +153,6 @@ float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2,
 char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 void changeScene(Game* game, Scene* scene);
+void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
 
 #endif
