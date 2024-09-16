@@ -2,10 +2,18 @@
 #include <stdio.h>
 #include <math.h>
 
-void destroyBitmaps(LinkedItem* item){
+// LLFF : (L)inked (L)ist (F)ree (F)unction
+
+void LLFFDestroyBitmaps(LinkedItem* item){
     al_destroy_bitmap((ALLEGRO_BITMAP*)item->data);
     item->data=NULL;
     printf("\nFreed a bitmap!");
+}
+
+void LLFFFreeScenes(LinkedItem* item){
+    freeScene((Scene*)item->data);
+    item->data=NULL;
+    printf("\nFreed a scene!");
 }
 
 Game* initGame(GameConfig config){
@@ -33,7 +41,9 @@ Game* initGame(GameConfig config){
     game->ev_queue = al_create_event_queue();
     game->timer = al_create_timer(1.0 / config.fps);
     game->isAlive = 1;
-    game->bitmaps = createLinkedList(destroyBitmaps);
+    game->bitmaps = createLinkedList(LLFFDestroyBitmaps);
+    game->scenes = createLinkedList(LLFFFreeScenes);
+    game->currentScene=NULL;
 
     al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
     al_register_event_source(game->ev_queue, al_get_keyboard_event_source());
@@ -52,6 +62,7 @@ void freeGame(Game* game){
     al_shutdown_primitives_addon();
     al_uninstall_keyboard();
     al_uninstall_mouse();
+    freeLinkedList(game->scenes);
     freeLinkedList(game->bitmaps);
     free(game);
 }
@@ -64,7 +75,8 @@ void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game* game)){
     game->eventFunction = f;
 }
 
-void render(Game* game, Scene* scene){
+void render(Game* game){
+    Scene* scene = game->currentScene;
     do {
         ALLEGRO_EVENT ev;
         al_wait_for_event(game->ev_queue, &ev);
@@ -72,14 +84,18 @@ void render(Game* game, Scene* scene){
             game->isAlive=0;
             return;
         }
-        game->eventFunction(ev, scene, game);
+        if (scene != NULL && game->eventFunction != NULL)
+            game->eventFunction(ev, scene, game);
     } while(!al_is_event_queue_empty(game->ev_queue));
 
+    if (scene == NULL)
+        return;
 
     al_clear_to_color(scene->backgroundColor);
 
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
-    scene->scriptFunction(scene);
+    if (scene->scriptFunction != NULL)
+        scene->scriptFunction(scene);
 
     // CAMERA FOLLOW ACTION
     if (scene->camera.followTarget != NULL){
@@ -194,6 +210,10 @@ void render(Game* game, Scene* scene){
 
         if (!hasCollision){
             obj->x=x;
+            obj->y=y;
+        } else if (obj->physics.enabled && obj->physics.gravity){
+            y-=obj->physics.gravitySpeed+scene->gravityValue;
+            obj->physics.gravitySpeed=0;
             obj->y=y;
         }
 
@@ -350,7 +370,7 @@ void printList(LinkedList* list){
 //     free(list);
 // }
 
-Scene* createScene(void (*scriptFunction)(Scene*)){
+Scene* createScene(Game* game, void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
     scene->objects = createLinkedList(NULL);
     scene->camera.offset.x=0.;
@@ -362,6 +382,8 @@ Scene* createScene(void (*scriptFunction)(Scene*)){
     scene->scriptFunction=scriptFunction;
     scene->gravityValue=0.1;
     scene->backgroundColor=al_map_rgb(30, 30, 30);
+
+    addItemToLinkedList(game->scenes, scene);
     return scene;
 }
 
@@ -442,4 +464,8 @@ char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, floa
 
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
     return x1+w1 > x2 && x1 < x2+w2 && y1+h1 > y2 && y1 < y2+h2;
+}
+
+void changeScene(Game* game, Scene* scene){
+    game->currentScene=scene;
 }

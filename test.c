@@ -37,16 +37,6 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
             square->physics.acc.y=0;
         }
     }
-    //  if(checkCollision(square,square2))
-    //     {
-    //      if(square->physics.acc.x!=0)
-    //      square->physics.acc.x=-1; 
-    //       if(square->physics.acc.y!=0)
-    //      square->physics.acc.y=-1; 
-    //     } else{
-    //         square->physics.acc.x=abs(square->physics.acc.x);
-    //         square->physics.acc.y=abs(square->physics.acc.y);
-    //     }
 }
 
 void mainSceneScript(Scene* self){
@@ -65,13 +55,13 @@ int main(){
     config.title="Test CAE";
 
     Game* game = initGame(config);
-    Scene* mainScene = createScene(mainSceneScript);
+    Scene* mainScene = createScene(game, mainSceneScript);
     setEventFunction(game, handleEvent);
 
     ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
-    square = createGameObject(ANIMATED_SPRITE, 500, 500, 50, 50);
+    square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50);
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
     GameObject* square3 = createGameObject(SOLID, 20, 20, 50, 50);
     square->collisionEnabled=1;
@@ -93,12 +83,12 @@ int main(){
     square->physics.maxSpeed=5;
     //square->physics.gravity=1;
 
+    changeScene(game, mainScene);
+
     while (game->isAlive){
-        //printf("\nwidth anim: %d", square3->animation.width);
-        render(game, mainScene);
+        render(game);
     }
 
-    freeScene(mainScene);
     freeGame(game);
 
     printf("Exited!\n");

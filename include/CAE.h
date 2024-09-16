@@ -122,14 +122,16 @@ struct Game{
     int windowY;
     void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
     LinkedList* bitmaps;
+    LinkedList* scenes;
+    Scene* currentScene;
 };
 
-void destroyBitmaps(LinkedItem* item);
+void LLFFDestroyBitmaps(LinkedItem* item);
 Game* initGame(GameConfig config);
 void freeGame(Game* game);
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game*));
-void render(Game* game, Scene* scene);
+void render(Game* game);
 // GameObjectList* createGameObjectList();
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
 void freeLinkedItem(LinkedItem* item);
@@ -140,7 +142,7 @@ void removeItemLinkedList(LinkedList* list, void* searchData);
 void printList(LinkedList* list);
 // void freeGameObjects(GameObject* obj);
 // void freeGameObjectList(GameObjectList* list);
-Scene* createScene(void (*scriptFunction)(Scene*));
+Scene* createScene(Game* game, void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
 ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap);
@@ -150,5 +152,6 @@ void addGameObjectToScene(Scene* scene, GameObject* obj);
 float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+void changeScene(Game* game, Scene* scene);
 
 #endif
