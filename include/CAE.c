@@ -209,17 +209,20 @@ void render(Game* game){
         // PHYSICS PROCESS
         if (obj->physics.enabled){
             // SPEED BY ACCELERATION X
-            if (obj->physics.speed.x <= obj->physics.maxSpeed && obj->physics.speed.x >= -obj->physics.maxSpeed){
-                obj->physics.speed.x+=obj->physics.acc.x*obj->physics.directions.x-obj->physics.friction*obj->physics.directions.x;
-                if (obj->physics.acc.x == 0 && round(obj->physics.speed.x) == 0){
-                    obj->physics.speed.x=0;
-                    obj->physics.directions.x=0;
-                }
-            } else if (obj->physics.speed.x < 0){
-                obj->physics.speed.x=-obj->physics.maxSpeed;
-            } else{
-                obj->physics.speed.x=obj->physics.maxSpeed;
+            int xDir = obj->physics.speed.x/fabsf(obj->physics.speed.x)*-1;
+            obj->physics.speed.x += obj->physics.acc.x*obj->physics.directions.x-obj->physics.friction*obj->physics.directions.x;
+            if (obj->physics.acc.x == 0 && obj->physics.speed.x >= -1 && obj->physics.speed.x <= 1){
+                obj->physics.speed.x=0;
+                obj->physics.directions.x=0;
             }
+            if (obj->physics.speed.x > obj->physics.maxSpeed || obj->physics.speed.x < -obj->physics.maxSpeed){
+                if (obj->physics.speed.x < 0){
+                obj->physics.speed.x=-obj->physics.maxSpeed;
+                } else{
+                    obj->physics.speed.x=obj->physics.maxSpeed;
+                }
+            }
+            printf("\nSpeed X: %f\n", obj->physics.speed.x);
 
             // SPEED BY ACCELERATION Y
             if (obj->physics.speed.y <= obj->physics.maxSpeed && obj->physics.speed.y >= -obj->physics.maxSpeed){
