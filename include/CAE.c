@@ -81,16 +81,16 @@ void freeGame(Game* game){
     al_destroy_display(game->display);
     al_destroy_event_queue(game->ev_queue);
     al_destroy_timer(game->timer);
-    al_shutdown_primitives_addon();
-    al_shutdown_font_addon();
-    al_shutdown_image_addon();
-    al_shutdown_ttf_addon();
     al_uninstall_keyboard();
     al_uninstall_mouse();
     freeLinkedList(game->scenes);
     freeLinkedList(game->bitmaps);
     freeLinkedList(game->fonts);
     free(game);
+    al_shutdown_primitives_addon();
+    al_shutdown_font_addon();
+    al_shutdown_image_addon();
+    al_shutdown_ttf_addon();
 }
 
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source){
