@@ -44,6 +44,10 @@ void mainSceneScript(Scene* self){
     //self->camera.y-=1;
 }
 
+void onTestButtonClick(Scene* scene){
+    printf("\nButton clicked!");
+}
+
 int main(){
     GameConfig config;
     config.fps=60;
@@ -89,6 +93,10 @@ int main(){
     //square->physics.gravity=1;
 
     changeScene(game, mainScene);
+
+    ALLEGRO_FONT* arialFont = loadTTF(game, "./arial.ttf", 20);
+    addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,255,0), arialFont));
+    addButtonToScene(mainScene, createButton(20, 100, 100, 50, al_map_rgb(0, 0, 255), createText("Click me!", 400, 400, al_map_rgb(255,0,0), arialFont), onTestButtonClick));
 
     while (game->isAlive){
         // ALLEGRO_KEYBOARD_STATE state;

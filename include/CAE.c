@@ -4,10 +4,29 @@
 
 // LLFF : (L)inked (L)ist (F)ree (F)unction
 
+void LLFFFreeButtons(LinkedItem* item){
+    Button* btn = item->data;
+    free(btn->text->text);
+    free(btn->text);
+    printf("\nFreed a Button!");
+}
+
+void LLFFFreeTexts(LinkedItem* item){
+    Text* txt = item->data;
+    free(txt->text);
+    printf("\nFreed a Text!");
+}
+
 void LLFFDestroyBitmaps(LinkedItem* item){
     al_destroy_bitmap((ALLEGRO_BITMAP*)item->data);
     item->data=NULL;
     printf("\nFreed a bitmap!");
+}
+
+void LLFFDestroyFonts(LinkedItem* item){
+    al_destroy_font((ALLEGRO_FONT*)item->data);
+    item->data=NULL;
+    printf("\nFreed a font!");
 }
 
 void LLFFFreeScenes(LinkedItem* item){
@@ -22,6 +41,8 @@ Game* initGame(GameConfig config){
     al_init_image_addon();
     al_install_keyboard();
     al_install_mouse();
+    al_init_font_addon();
+    al_init_ttf_addon();
     Game* game = (Game*)malloc(sizeof(Game));
     if (config.fullscreen){
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
@@ -43,6 +64,7 @@ Game* initGame(GameConfig config){
     game->isAlive = 1;
     game->bitmaps = createLinkedList(LLFFDestroyBitmaps);
     game->scenes = createLinkedList(LLFFFreeScenes);
+    game->fonts = createLinkedList(LLFFDestroyFonts);
     game->currentScene=NULL;
 
     al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
@@ -60,10 +82,14 @@ void freeGame(Game* game){
     al_destroy_event_queue(game->ev_queue);
     al_destroy_timer(game->timer);
     al_shutdown_primitives_addon();
+    al_shutdown_font_addon();
+    al_shutdown_image_addon();
+    al_shutdown_ttf_addon();
     al_uninstall_keyboard();
     al_uninstall_mouse();
     freeLinkedList(game->scenes);
     freeLinkedList(game->bitmaps);
+    freeLinkedList(game->fonts);
     free(game);
 }
 
@@ -73,6 +99,19 @@ void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source){
 
 void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game* game)){
     game->eventFunction = f;
+}
+
+void renderButton(Button* button){
+    if (button->visible){
+        al_draw_filled_rounded_rectangle(button->position.x, button->position.y, button->position.x+button->width, button->position.y+button->height, 5, 5, button->backgroundColor);
+        al_draw_text(button->text->font, button->text->color, button->position.x, button->position.y, 0, button->text->text);
+    }
+}
+
+void renderText(Text* text){
+    if (text->visible){
+        al_draw_text(text->font, text->color, text->position.x, text->position.y, 0, text->text);
+    }
 }
 
 void render(Game* game){
@@ -104,8 +143,8 @@ void render(Game* game){
         char dirY=0;
         int viewX=scene->camera.offset.x+game->displayWidth/2;
         int viewY=scene->camera.offset.y+game->displayHeight/2;
-        int targetX=scene->camera.followTarget->x+scene->camera.followTarget->width/2;
-        int targetY=scene->camera.followTarget->y+scene->camera.followTarget->height/2;
+        int targetX=scene->camera.followTarget->position.x+scene->camera.followTarget->width/2;
+        int targetY=scene->camera.followTarget->position.y+scene->camera.followTarget->height/2;
         int difX=abs(targetX-viewX);
         int difY=abs(targetY-viewY);
 
@@ -142,8 +181,8 @@ void render(Game* game){
     LinkedItem* item=scene->objects->first;
     while (item!=NULL){
         GameObject* obj=item->data;
-        float x=obj->x;
-        float y=obj->y;
+        float x=obj->position.x;
+        float y=obj->position.y;
         // PHYSICS PROCESS
         if (obj->physics.enabled){
             // SPEED BY ACCELERATION X
@@ -178,8 +217,8 @@ void render(Game* game){
                 y+=obj->physics.gravitySpeed;
             }
 
-            // obj->x+=obj->physics.speed*obj->physics.directions.x;
-            // obj->y+=obj->physics.speed*obj->physics.directions.y;
+            // obj->position.x+=obj->physics.speed*obj->physics.directions.x;
+            // obj->position.y+=obj->physics.speed*obj->physics.directions.y;
             x+=obj->physics.speed.x;
             y+=obj->physics.speed.y;
         }
@@ -193,10 +232,10 @@ void render(Game* game){
                 if (obj2->collisionEnabled && obj2!=obj){
                     switch(obj->collisionType){
                         case COLLISION_RECT:
-                            hasCollision=checkCollisionRect(x, y, obj->width, obj->height, obj2->x, obj2->y, obj2->width, obj2->height);
+                            hasCollision=checkCollisionRect(x, y, obj->width, obj->height, obj2->position.x, obj2->position.y, obj2->width, obj2->height);
                             break;
                         case COLLISION_CIRCLE:
-                            hasCollision=checkCollisionCircle(x, y, obj->width, obj->height, obj2->x, obj2->y, obj2->width, obj2->height);
+                            hasCollision=checkCollisionCircle(x, y, obj->width, obj->height, obj2->position.x, obj2->position.y, obj2->width, obj2->height);
                             break;
                         default:
                             break;
@@ -210,16 +249,16 @@ void render(Game* game){
         }
 
         if (!hasCollision){
-            obj->x=x;
-            obj->y=y;
+            obj->position.x=x;
+            obj->position.y=y;
         } else if (obj->physics.enabled && obj->physics.gravity){
             y-=obj->physics.gravitySpeed+scene->gravityValue;
             obj->physics.gravitySpeed=0;
-            obj->y=y;
+            obj->position.y=y;
         }
 
         // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!((obj->x+obj->width > scene->camera.offset.x && obj->x < scene->camera.offset.x+game->displayWidth) && (obj->y+obj->height > scene->camera.offset.y && obj->y < scene->camera.offset.y+game->displayHeight))){
+        if (!((obj->position.x+obj->width > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+game->displayWidth) && (obj->position.y+obj->height > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+game->displayHeight))){
             item=item->next;
             continue;
         }
@@ -266,6 +305,23 @@ void render(Game* game){
         }
         item=item->next;
     }
+
+    // RENDER UI LAYER
+    if (scene->ui.visible){
+        // BUTTONS
+        LinkedItem* item=scene->ui.buttons->first;
+        while (item!=NULL){
+            renderButton((Button*)item->data);
+            item=item->next;
+        }
+        // TEXTS
+        item=scene->ui.texts->first;
+        while (item!=NULL){
+            renderText((Text*)item->data);
+            item=item->next;
+        }
+    }
+
     al_flip_display();
 }
 
@@ -388,6 +444,9 @@ Scene* createScene(Game* game, void (*scriptFunction)(Scene*)){
     scene->scriptFunction=scriptFunction;
     scene->gravityValue=0.1;
     scene->backgroundColor=al_map_rgb(30, 30, 30);
+    scene->ui.buttons=createLinkedList(LLFFFreeButtons);
+    scene->ui.texts=createLinkedList(LLFFFreeTexts);
+    scene->ui.visible=1;
 
     addItemToLinkedList(game->scenes, scene);
     return scene;
@@ -395,14 +454,16 @@ Scene* createScene(Game* game, void (*scriptFunction)(Scene*)){
 
 void freeScene(Scene* scene){
     freeLinkedList(scene->objects);
+    freeLinkedList(scene->ui.buttons);
+    freeLinkedList(scene->ui.texts);
     free(scene);
 }
 
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height){
     GameObject* newObj = (GameObject*)malloc(sizeof(GameObject));
     newObj->type=type;
-    newObj->x=x;
-    newObj->y=y;
+    newObj->position.x=x;
+    newObj->position.y=y;
     newObj->width=width;
     newObj->height=height;
     newObj->color=al_map_rgb(0, 0, 0);
@@ -478,4 +539,42 @@ void changeScene(Game* game, Scene* scene){
 
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
     obj->bitmap=bitmap;
+}
+
+ALLEGRO_FONT* loadTTF(Game* game, char* path, int size){
+    ALLEGRO_FONT* ttf = al_load_ttf_font(path, size, 0);
+    addItemToLinkedList(game->fonts, ttf);
+    return ttf;
+}
+
+Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, ALLEGRO_FONT* font){
+    Text* textObj = (Text*)malloc(sizeof(Text));
+    char* t = (char*)malloc(sizeof(char)*strlen(text)+1);
+    strcpy(t, text);
+    textObj->text=t;
+    textObj->position.x=x;
+    textObj->position.y=y;
+    textObj->color=color;
+    textObj->font=font;
+    return textObj;
+}
+
+void addTextToScene(Scene* scene, Text* text){
+    addItemToLinkedList(scene->ui.texts, text);
+}
+
+Button* createButton(float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, Text* text, void (*onClick)(Scene*)){
+    Button* button = (Button*)malloc(sizeof(Button));
+    button->position.x=x;
+    button->position.y=y;
+    button->width=width;
+    button->height=height;
+    button->backgroundColor=backgroundColor;
+    button->text=text;
+    button->onClick=onClick;
+    return button;
+}
+
+void addButtonToScene(Scene* scene, Button* button){
+    addItemToLinkedList(scene->ui.buttons, button);
 }

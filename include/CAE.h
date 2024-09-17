@@ -6,7 +6,10 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/keyboard.h>
 #include <allegro5/mouse.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum OBJECT_TYPE {
     SOLID,
@@ -60,8 +63,7 @@ struct AnimationProps{
 
 typedef struct GameObject GameObject;
 struct GameObject{
-    float x;
-    float y;
+    Vector2 position;
     int width;
     int height;
     PhysicsConfig physics;
@@ -103,6 +105,13 @@ struct GameCamera{
     float followAcc;
 };
 
+typedef struct UI UI;
+struct UI{
+    unsigned char visible;
+    LinkedList* buttons;
+    LinkedList* texts;
+};
+
 typedef struct Scene Scene;
 struct Scene{
     GameCamera camera;
@@ -110,6 +119,27 @@ struct Scene{
     void (*scriptFunction)(Scene*);
     float gravityValue;
     ALLEGRO_COLOR backgroundColor;
+    UI ui;
+};
+
+typedef struct Text Text;
+struct Text{
+    Vector2 position;
+    char* text;
+    ALLEGRO_COLOR color;
+    ALLEGRO_FONT* font;
+    unsigned char visible;
+};
+
+typedef struct Button Button;
+struct Button{
+    Vector2 position;
+    int width;
+    int height;
+    ALLEGRO_COLOR backgroundColor;
+    void (*onClick)(Scene*);
+    Text* text;
+    unsigned char visible;
 };
 
 typedef struct Game Game;
@@ -123,14 +153,21 @@ struct Game{
     void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
     LinkedList* bitmaps;
     LinkedList* scenes;
+    LinkedList* fonts;
     Scene* currentScene;
 };
 
+void LLFFFreeButtons(LinkedItem* item);
+void LLFFFreeTexts(LinkedItem* item);
 void LLFFDestroyBitmaps(LinkedItem* item);
+void LLFFDestroyFonts(LinkedItem* item);
+void LLFFFreeScenes(LinkedItem* item);
 Game* initGame(GameConfig config);
 void freeGame(Game* game);
 void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game*));
+void renderButton(Button* button);
+void renderText(Text* text);
 void render(Game* game);
 // GameObjectList* createGameObjectList();
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
@@ -154,5 +191,10 @@ char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, floa
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 void changeScene(Game* game, Scene* scene);
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
+ALLEGRO_FONT* loadTTF(Game* game, char* path, int size);
+Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, ALLEGRO_FONT* font);
+void addTextToScene(Scene* scene, Text* text);
+Button* createButton(float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, Text* text, void (*onClick)(Scene*));
+void addButtonToScene(Scene* scene, Button* button);
 
 #endif
