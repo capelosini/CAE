@@ -94,9 +94,9 @@ int main(){
 
     changeScene(game, mainScene);
 
-    ALLEGRO_FONT* arialFont = loadTTF(game, "./arial.ttf", 20);
-    addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,255,0), arialFont));
-    addButtonToScene(mainScene, createButton(20, 100, 100, 50, al_map_rgb(0, 0, 255), createText("Click me!", 400, 400, al_map_rgb(255,0,0), arialFont), onTestButtonClick));
+    Font* arialFont = loadTTF(game, "./arial.ttf", 20);
+    addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
+    addButtonToScene(mainScene, createButton(20, 100, 100, 50, al_map_rgb(10, 10, 10), createText("Click me!", 400, 400, al_map_rgb(255,255,255), arialFont), onTestButtonClick));
 
     while (game->isAlive){
         // ALLEGRO_KEYBOARD_STATE state;

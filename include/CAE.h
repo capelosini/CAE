@@ -122,12 +122,18 @@ struct Scene{
     UI ui;
 };
 
+typedef struct Font Font;
+struct Font{
+    ALLEGRO_FONT* font;
+    int size;
+};
+
 typedef struct Text Text;
 struct Text{
     Vector2 position;
     char* text;
     ALLEGRO_COLOR color;
-    ALLEGRO_FONT* font;
+    Font* font;
     unsigned char visible;
 };
 
@@ -191,8 +197,8 @@ char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, floa
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 void changeScene(Game* game, Scene* scene);
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
-ALLEGRO_FONT* loadTTF(Game* game, char* path, int size);
-Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, ALLEGRO_FONT* font);
+Font* loadTTF(Game* game, char* path, int size);
+Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
 void addTextToScene(Scene* scene, Text* text);
 Button* createButton(float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, Text* text, void (*onClick)(Scene*));
 void addButtonToScene(Scene* scene, Button* button);

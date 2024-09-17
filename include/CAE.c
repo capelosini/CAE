@@ -24,8 +24,8 @@ void LLFFDestroyBitmaps(LinkedItem* item){
 }
 
 void LLFFDestroyFonts(LinkedItem* item){
-    al_destroy_font((ALLEGRO_FONT*)item->data);
-    item->data=NULL;
+    Font* font = (Font*)item->data;
+    al_destroy_font(font->font);
     printf("\nFreed a font!");
 }
 
@@ -104,13 +104,15 @@ void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game* game)){
 void renderButton(Button* button){
     if (button->visible){
         al_draw_filled_rounded_rectangle(button->position.x, button->position.y, button->position.x+button->width, button->position.y+button->height, 5, 5, button->backgroundColor);
-        al_draw_text(button->text->font, button->text->color, button->position.x, button->position.y, 0, button->text->text);
+        float x = button->position.x+button->width/2-al_get_text_width(button->text->font->font, button->text->text)/2;
+        float y = button->position.y+button->height/2-button->text->font->size/2;
+        al_draw_text(button->text->font->font, button->text->color, x, y, 0, button->text->text);
     }
 }
 
 void renderText(Text* text){
     if (text->visible){
-        al_draw_text(text->font, text->color, text->position.x, text->position.y, 0, text->text);
+        al_draw_text(text->font->font, text->color, text->position.x, text->position.y, 0, text->text);
     }
 }
 
@@ -122,6 +124,27 @@ void render(Game* game){
         if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
             game->isAlive=0;
             return;
+        } else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && scene != NULL){
+            if (scene->ui.visible){
+                ALLEGRO_MOUSE_STATE state;
+                al_get_mouse_state(&state);
+                if (al_mouse_button_down(&state, 1)){
+                    LinkedItem* item = scene->ui.buttons->first;
+                    while(item != NULL){
+                        Button* btn = (Button*)item->data;
+                        if (!btn->visible){
+                            item = item->next;
+                            continue;
+                        }
+                        if (ev.mouse.x >= btn->position.x && ev.mouse.x <= btn->position.x+btn->width && ev.mouse.y >= btn->position.y && ev.mouse.y <= btn->position.y+btn->height){
+                            if (btn->onClick != NULL)
+                                btn->onClick(scene);
+                            break;
+                        }
+                        item = item->next;
+                    }
+                }
+            }
         }
 
         if (scene != NULL && game->eventFunction != NULL)
@@ -541,13 +564,16 @@ void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
     obj->bitmap=bitmap;
 }
 
-ALLEGRO_FONT* loadTTF(Game* game, char* path, int size){
+Font* loadTTF(Game* game, char* path, int size){
+    Font* font = (Font*)malloc(sizeof(Font));
     ALLEGRO_FONT* ttf = al_load_ttf_font(path, size, 0);
-    addItemToLinkedList(game->fonts, ttf);
-    return ttf;
+    font->font=ttf;
+    font->size=size;
+    addItemToLinkedList(game->fonts, font);
+    return font;
 }
 
-Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, ALLEGRO_FONT* font){
+Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, Font* font){
     Text* textObj = (Text*)malloc(sizeof(Text));
     char* t = (char*)malloc(sizeof(char)*strlen(text)+1);
     strcpy(t, text);
@@ -556,6 +582,7 @@ Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, ALLEGRO_FONT
     textObj->position.y=y;
     textObj->color=color;
     textObj->font=font;
+    textObj->visible=1;
     return textObj;
 }
 
@@ -572,6 +599,7 @@ Button* createButton(float x, float y, int width, int height, ALLEGRO_COLOR back
     button->backgroundColor=backgroundColor;
     button->text=text;
     button->onClick=onClick;
+    button->visible=1;
     return button;
 }
 
