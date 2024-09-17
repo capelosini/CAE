@@ -209,32 +209,38 @@ void render(Game* game){
         // PHYSICS PROCESS
         if (obj->physics.enabled){
             // SPEED BY ACCELERATION X
-            int xDir = obj->physics.speed.x/fabsf(obj->physics.speed.x)*-1;
-            obj->physics.speed.x += obj->physics.acc.x*obj->physics.directions.x-obj->physics.friction*obj->physics.directions.x;
-            if (obj->physics.acc.x == 0 && obj->physics.speed.x >= -1 && obj->physics.speed.x <= 1){
+            //int xDir = obj->physics.speed.x/fabsf(obj->physics.speed.x)*-1;
+            int xDir = 1;
+            if (obj->physics.speed.x < 0)
+                xDir=-1;
+            obj->physics.speed.x += obj->physics.acc.x*obj->physics.directions.x-obj->physics.friction*xDir;
+            if (obj->physics.acc.x == 0 && round(obj->physics.speed.x) == 0){
                 obj->physics.speed.x=0;
                 obj->physics.directions.x=0;
             }
             if (obj->physics.speed.x > obj->physics.maxSpeed || obj->physics.speed.x < -obj->physics.maxSpeed){
                 if (obj->physics.speed.x < 0){
-                obj->physics.speed.x=-obj->physics.maxSpeed;
+                    obj->physics.speed.x=-obj->physics.maxSpeed;
                 } else{
                     obj->physics.speed.x=obj->physics.maxSpeed;
                 }
             }
-            printf("\nSpeed X: %f\n", obj->physics.speed.x);
 
             // SPEED BY ACCELERATION Y
-            if (obj->physics.speed.y <= obj->physics.maxSpeed && obj->physics.speed.y >= -obj->physics.maxSpeed){
-                obj->physics.speed.y+=obj->physics.acc.y*obj->physics.directions.y-obj->physics.friction*obj->physics.directions.y;
-                if (obj->physics.acc.y == 0 && round(obj->physics.speed.y) == 0){
-                    obj->physics.speed.y=0;
-                    obj->physics.directions.y=0;
+            int yDir = 1;
+            if (obj->physics.speed.y < 0)
+                yDir=-1;
+            obj->physics.speed.y += obj->physics.acc.y*obj->physics.directions.y-obj->physics.friction*yDir;
+            if (obj->physics.acc.y == 0 && round(obj->physics.speed.y) == 0){
+                obj->physics.speed.y=0;
+                obj->physics.directions.y=0;
+            }
+            if (obj->physics.speed.y > obj->physics.maxSpeed || obj->physics.speed.y < -obj->physics.maxSpeed){
+                if (obj->physics.speed.y < 0){
+                    obj->physics.speed.y=-obj->physics.maxSpeed;
+                } else{
+                    obj->physics.speed.y=obj->physics.maxSpeed;
                 }
-            } else if (obj->physics.speed.y < 0){
-                obj->physics.speed.y=-obj->physics.maxSpeed;
-            } else{
-                obj->physics.speed.y=obj->physics.maxSpeed;
             }
 
             // GRAVITY
