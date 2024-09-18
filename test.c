@@ -1,8 +1,11 @@
 #include "include/CAE.h"
 #include <stdio.h>
 
+Game* game;
 GameObject* square;
 GameObject* square2;
+Scene* mainScene;
+Scene* mainMenu;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
@@ -50,9 +53,6 @@ void mainSceneScript(Scene* self){
     char left = al_key_down(&keyState, ALLEGRO_KEY_A);
     char right = al_key_down(&keyState, ALLEGRO_KEY_D);
 
-    printf("\nUP: %d\nDOWN: %d\nRIGHT: %d\nLEFT: %d\n", up, down, right, left);
-    printf("\nACCX: %f\nACCY: %f\n", square->physics.acc.x, square->physics.acc.y);
-
     if (up && !down){
         square->physics.directions.y=-1;
         square->physics.acc.y=1;
@@ -76,7 +76,11 @@ void mainSceneScript(Scene* self){
 }
 
 void onTestButtonClick(Scene* scene){
-    printf("\nButton clicked!");
+    changeScene(game, mainMenu);
+}
+
+void startGameButtonClicked(Scene* scene) {
+    changeScene(game, mainScene);
 }
 
 int main(){
@@ -89,8 +93,9 @@ int main(){
     config.sizeY=1080;
     config.title="Test CAE";
 
-    Game* game = initGame(config);
-    Scene* mainScene = createScene(game, mainSceneScript);
+    game = initGame(config);
+    mainScene = createScene(game, mainSceneScript);
+    mainMenu = createScene(game, NULL);
     setEventFunction(game, handleEvent);
 
     ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demo.bmp");
@@ -124,10 +129,16 @@ int main(){
     //square->physics.gravity=1;
 
     changeScene(game, mainScene);
-
+    // MAIN MENYH
+    int size=70;
     Font* arialFont = loadTTF(game, "./arial.ttf", 20);
+    char* title = "Main menu";
+    addTextToScene(mainMenu, createText(title,game->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, al_map_rgb(255, 255, 255), arialFont));
+    addButtonToScene(mainMenu, createButton(game->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), createText("Play", 400, 400, al_map_rgb(255, 255, 255), arialFont), startGameButtonClicked));
+    // MAIN SCENE
     addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
     addButtonToScene(mainScene, createButton(20, 100, 100, 50, al_map_rgb(10, 10, 10), createText("Click me!", 400, 400, al_map_rgb(255,255,255), arialFont), onTestButtonClick));
+
 
     while (game->isAlive){
         // ALLEGRO_KEYBOARD_STATE state;

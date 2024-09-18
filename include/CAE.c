@@ -69,7 +69,7 @@ Game* initGame(GameConfig config){
 
     al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
     al_register_event_source(game->ev_queue, al_get_keyboard_event_source());
-    al_register_event_source(game->ev_queue, al_get_mouse_event_source());
+    al_register_event_source(game->ev_queue, al_get_mouse_event_source()); 
     al_register_event_source(game->ev_queue, al_get_timer_event_source(game->timer));
 
     al_start_timer(game->timer);
@@ -118,13 +118,18 @@ void renderText(Text* text){
 
 void render(Game* game){
     Scene* scene = game->currentScene;
+    char drawTime = 0;
     do {
         ALLEGRO_EVENT ev;
         al_wait_for_event(game->ev_queue, &ev);
         if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
             game->isAlive=0;
             return;
-        } else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && scene != NULL){
+        }
+        else if (ev.type == ALLEGRO_EVENT_TIMER) {
+            drawTime = 1;
+        }
+        else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && scene != NULL) {
             if (scene->ui.visible){
                 ALLEGRO_MOUSE_STATE state;
                 al_get_mouse_state(&state);
@@ -151,7 +156,7 @@ void render(Game* game){
             game->eventFunction(ev, scene, game);
     } while(!al_is_event_queue_empty(game->ev_queue));
 
-    if (scene == NULL)
+    if (scene == NULL || !drawTime)
         return;
 
     al_clear_to_color(scene->backgroundColor);
