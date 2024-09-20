@@ -98,12 +98,13 @@ int main(){
     mainMenu = createScene(game, NULL);
     setEventFunction(game, handleEvent);
 
-    ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demo.bmp");
+    Bitmap* demoBitmap = loadBitmap(game, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50);
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
     GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150);
+    GameObject* square4 = createGameObject(SPRITE, 100, 100, 300, 300);
     
     square->collisionEnabled=1;
     square->collisionType=COLLISION_CIRCLE;
@@ -113,12 +114,13 @@ int main(){
     
     setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
     setGameObjectBitmap(square3, loadBitmap(game, "./demoTree.png"));
-    
+    setGameObjectBitmap(square4, createSubBitmap(game, square3->bitmap, 0, 0, -1, -1));
     square2->color=al_map_rgb(255, 0, 0);
     
     addGameObjectToScene(mainScene, square);
     addGameObjectToScene(mainScene, square2);
     addGameObjectToScene(mainScene, square3);
+    addGameObjectToScene(mainScene, square4);
 
     mainScene->camera.followTarget=square;
 
@@ -134,17 +136,14 @@ int main(){
     Font* arialFont = loadTTF(game, "./arial.ttf", 20);
     char* title = "Main menu";
     addTextToScene(mainMenu, createText(title,game->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, al_map_rgb(255, 255, 255), arialFont));
-    addButtonToScene(mainMenu, createButton(game->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), createText("Play", 400, 400, al_map_rgb(255, 255, 255), arialFont), startGameButtonClicked));
+    addButtonToScene(mainMenu, createButton(game, game->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./arial.ttf", createSubBitmap(game, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
     // MAIN SCENE
     addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
-    addButtonToScene(mainScene, createButton(20, 100, 100, 50, al_map_rgb(10, 10, 10), createText("Click me!", 400, 400, al_map_rgb(255,255,255), arialFont), onTestButtonClick));
-
+    addButtonToScene(mainScene, createButton(game, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./arial.ttf", NULL, onTestButtonClick));
 
     while (game->isAlive){
-        // ALLEGRO_KEYBOARD_STATE state;
-        // al_get_keyboard_state(&state);
-        // printf("\n%d", al_key_down(&state, ALLEGRO_KEY_0));
         render(game);
+        al_draw_bitmap(square4->bitmap->bitmap, 200, 200, 0);
     }
 
     freeGame(game);

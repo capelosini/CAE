@@ -1,5 +1,6 @@
 #ifndef CAE_ENGINE_INIT
 #define CAE_ENGINE_INIT
+#define _CRT_SECURE_NO_DEPRECATE
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
@@ -61,6 +62,15 @@ struct AnimationProps{
     Vector2 direction;
 };
 
+typedef struct Bitmap Bitmap;
+struct Bitmap{
+    ALLEGRO_BITMAP* bitmap;
+    int sx;
+    int sy;
+    int sw;
+    int sh;
+};
+
 typedef struct GameObject GameObject;
 struct GameObject{
     Vector2 position;
@@ -70,7 +80,7 @@ struct GameObject{
     ALLEGRO_COLOR color;
     enum OBJECT_TYPE type;
     AnimationProps animation;
-    ALLEGRO_BITMAP* bitmap;
+    Bitmap* bitmap;
     unsigned char collisionEnabled;
     enum COLLISION_TYPE collisionType;
 };
@@ -143,8 +153,11 @@ struct Button{
     int width;
     int height;
     ALLEGRO_COLOR backgroundColor;
+    ALLEGRO_COLOR foregroundColor;
     void (*onClick)(Scene*);
-    Text* text;
+    char* text;
+    Font* font;
+    Bitmap* bitmap;
     unsigned char visible;
 };
 
@@ -158,6 +171,7 @@ struct Game{
     int displayHeight;
     void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
     LinkedList* bitmaps;
+    LinkedList* allegroBitmaps;
     LinkedList* scenes;
     LinkedList* fonts;
     Scene* currentScene;
@@ -165,7 +179,7 @@ struct Game{
 
 void LLFFFreeButtons(LinkedItem* item);
 void LLFFFreeTexts(LinkedItem* item);
-void LLFFDestroyBitmaps(LinkedItem* item);
+void LLFFDestroyAllegroBitmaps(LinkedItem* item);
 void LLFFDestroyFonts(LinkedItem* item);
 void LLFFFreeScenes(LinkedItem* item);
 Game* initGame(GameConfig config);
@@ -188,19 +202,21 @@ void printList(LinkedList* list);
 Scene* createScene(Game* game, void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
-ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap);
-void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
-void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
+Bitmap* loadBitmap(Game* game, char* pathToBitmap);
+void changeBitmapArea(Bitmap* bitmap, int sx, int sy, int sw, int sh);
+Bitmap* createSubBitmap(Game* game, Bitmap* bitmap, int sx, int sy, int sw, int sh);
+void setGameObjectAnimation(GameObject* obj, Bitmap* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
+void setBitmapTransparentColor(Bitmap* bm, ALLEGRO_COLOR color);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 void changeScene(Game* game, Scene* scene);
-void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
+void setGameObjectBitmap(GameObject* obj, Bitmap* bitmap);
 Font* loadTTF(Game* game, char* path, int size);
 Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
 void addTextToScene(Scene* scene, Text* text);
-Button* createButton(float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, Text* text, void (*onClick)(Scene*));
+Button* createButton(Game* game, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, Bitmap* bitmap, void (*onClick)(Scene*));
 void addButtonToScene(Scene* scene, Button* button);
 
 #endif

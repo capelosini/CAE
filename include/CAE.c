@@ -6,7 +6,6 @@
 
 void LLFFFreeButtons(LinkedItem* item){
     Button* btn = item->data;
-    free(btn->text->text);
     free(btn->text);
     printf("\nFreed a Button!");
 }
@@ -17,22 +16,22 @@ void LLFFFreeTexts(LinkedItem* item){
     printf("\nFreed a Text!");
 }
 
-void LLFFDestroyBitmaps(LinkedItem* item){
+void LLFFDestroyAllegroBitmaps(LinkedItem* item){
     al_destroy_bitmap((ALLEGRO_BITMAP*)item->data);
     item->data=NULL;
-    printf("\nFreed a bitmap!");
+    printf("\nFreed a Bitmap!");
 }
 
 void LLFFDestroyFonts(LinkedItem* item){
     Font* font = (Font*)item->data;
     al_destroy_font(font->font);
-    printf("\nFreed a font!");
+    printf("\nFreed a Font!");
 }
 
 void LLFFFreeScenes(LinkedItem* item){
     freeScene((Scene*)item->data);
     item->data=NULL;
-    printf("\nFreed a scene!");
+    printf("\nFreed a Scene!");
 }
 
 Game* initGame(GameConfig config){
@@ -62,7 +61,8 @@ Game* initGame(GameConfig config){
     game->ev_queue = al_create_event_queue();
     game->timer = al_create_timer(1.0 / config.fps);
     game->isAlive = 1;
-    game->bitmaps = createLinkedList(LLFFDestroyBitmaps);
+    game->bitmaps = createLinkedList(NULL);
+    game->allegroBitmaps = createLinkedList(LLFFDestroyAllegroBitmaps);
     game->scenes = createLinkedList(LLFFFreeScenes);
     game->fonts = createLinkedList(LLFFDestroyFonts);
     game->currentScene=NULL;
@@ -78,14 +78,15 @@ Game* initGame(GameConfig config){
 }
 
 void freeGame(Game* game){
+    freeLinkedList(game->scenes);
+    freeLinkedList(game->allegroBitmaps);
+    freeLinkedList(game->bitmaps);
+    freeLinkedList(game->fonts);
     al_destroy_display(game->display);
     al_destroy_event_queue(game->ev_queue);
     al_destroy_timer(game->timer);
     al_uninstall_keyboard();
     al_uninstall_mouse();
-    freeLinkedList(game->scenes);
-    freeLinkedList(game->bitmaps);
-    freeLinkedList(game->fonts);
     free(game);
     al_shutdown_primitives_addon();
     al_shutdown_font_addon();
@@ -103,10 +104,21 @@ void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game* game)){
 
 void renderButton(Button* button){
     if (button->visible){
+        if (button->bitmap != NULL){
+            int sw = button->bitmap->sw;
+            int sh = button->bitmap->sh;
+            if (sw <= 0)
+                sw = al_get_bitmap_width(button->bitmap->bitmap);
+            if (sh <= 0)
+                sh = al_get_bitmap_height(button->bitmap->bitmap);
+            al_draw_scaled_bitmap(button->bitmap->bitmap, button->bitmap->sx, button->bitmap->sy, sw, sh, button->position.x, button->position.y, button->width, button->height, 0);
+            return;
+        }
+
         al_draw_filled_rounded_rectangle(button->position.x, button->position.y, button->position.x+button->width, button->position.y+button->height, 5, 5, button->backgroundColor);
-        float x = button->position.x+button->width/2-al_get_text_width(button->text->font->font, button->text->text)/2;
-        float y = button->position.y+button->height/2-button->text->font->size/2;
-        al_draw_text(button->text->font->font, button->text->color, x, y, 0, button->text->text);
+        float x = button->position.x+button->width/2-al_get_text_width(button->font->font, button->text)/2;
+        float y = button->position.y+button->height/2-button->font->size/2;
+        al_draw_text(button->font->font, button->foregroundColor, x, y, 0, button->text);
     }
 }
 
@@ -154,6 +166,7 @@ void render(Game* game){
 
         if (scene != NULL && game->eventFunction != NULL)
             game->eventFunction(ev, scene, game);
+
     } while(!al_is_event_queue_empty(game->ev_queue));
 
     if (scene == NULL || !drawTime)
@@ -322,9 +335,13 @@ void render(Game* game){
                 al_draw_filled_rectangle(x, y, x+obj->width, y+obj->height, obj->color);
                 break;
             case SPRITE:
-                int w=al_get_bitmap_width(obj->bitmap);
-                int h=al_get_bitmap_height(obj->bitmap);
-                al_draw_scaled_bitmap(obj->bitmap, 0, 0, w, h, x, y, obj->width, obj->height, 0);
+                int sw = obj->bitmap->sw;
+                int sh = obj->bitmap->sh;
+                if (sw <= 0)
+                    sw = al_get_bitmap_width(obj->bitmap->bitmap);
+                if (sh <= 0)
+                    sh = al_get_bitmap_height(obj->bitmap->bitmap);
+                al_draw_scaled_bitmap(obj->bitmap->bitmap, obj->bitmap->sx, obj->bitmap->sy, sw, sh, x, y, obj->width, obj->height, 0);
                 break;
             case ANIMATED_SPRITE:
                 if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
@@ -334,7 +351,7 @@ void render(Game* game){
                     x+=fabs(obj->width*obj->animation.direction.x);
                 if (obj->animation.direction.y<0)
                     y+=fabs(obj->height*obj->animation.direction.y);
-                al_draw_scaled_bitmap(obj->bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
+                al_draw_scaled_bitmap(obj->bitmap->bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
                 obj->animation.index.x+=obj->animation.fps;
                 break;
             default:
@@ -523,13 +540,36 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     return newObj;
 }
 
-ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap){
+Bitmap* loadBitmap(Game* game, char* pathToBitmap){
+    Bitmap* bitmap = (Bitmap*)malloc(sizeof(Bitmap));
     ALLEGRO_BITMAP* bm = al_load_bitmap(pathToBitmap);
-    addItemToLinkedList(game->bitmaps, bm);
-    return bm;
+    bitmap->bitmap=bm;
+    bitmap->sw=bitmap->sh=-1;
+    bitmap->sx=bitmap->sy=0;
+    addItemToLinkedList(game->bitmaps, bitmap);
+    addItemToLinkedList(game->allegroBitmaps, bm);
+    return bitmap;
 }
 
-void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps){
+void changeBitmapArea(Bitmap* bitmap, int sx, int sy, int sw, int sh){
+    bitmap->sx=sx;
+    bitmap->sy=sy;
+    bitmap->sw=sw;
+    bitmap->sh=sh;
+}
+
+Bitmap* createSubBitmap(Game* game, Bitmap* bitmap, int sx, int sy, int sw, int sh){
+    Bitmap* subBitmap = (Bitmap*)malloc(sizeof(Bitmap));
+    subBitmap->bitmap=bitmap->bitmap;
+    subBitmap->sx=sx;
+    subBitmap->sy=sy;
+    subBitmap->sw=sw;
+    subBitmap->sh=sh;
+    addItemToLinkedList(game->bitmaps, subBitmap);
+    return subBitmap;
+}
+
+void setGameObjectAnimation(GameObject* obj, Bitmap* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps){
     if (obj->type != ANIMATED_SPRITE)
        return;
     obj->bitmap = bitmap;
@@ -543,8 +583,8 @@ void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWi
         obj->animation.fps/=100;
 }
 
-void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color){
-    al_convert_mask_to_alpha(bm, color);
+void setBitmapTransparentColor(Bitmap* bm, ALLEGRO_COLOR color){
+    al_convert_mask_to_alpha(bm->bitmap, color);
 }
 
 void addGameObjectToScene(Scene* scene, GameObject* obj){
@@ -574,7 +614,7 @@ void changeScene(Game* game, Scene* scene){
     game->currentScene=scene;
 }
 
-void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
+void setGameObjectBitmap(GameObject* obj, Bitmap* bitmap){
     obj->bitmap=bitmap;
 }
 
@@ -604,16 +644,24 @@ void addTextToScene(Scene* scene, Text* text){
     addItemToLinkedList(scene->ui.texts, text);
 }
 
-Button* createButton(float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, Text* text, void (*onClick)(Scene*)){
+Button* createButton(Game* game, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, Bitmap* bitmap, void (*onClick)(Scene*)){
     Button* button = (Button*)malloc(sizeof(Button));
     button->position.x=x;
     button->position.y=y;
     button->width=width;
     button->height=height;
-    button->backgroundColor=backgroundColor;
-    button->text=text;
     button->onClick=onClick;
     button->visible=1;
+    button->bitmap=bitmap;
+    char* btnTxt = (char*)malloc(sizeof(char) * strlen(text) + 1);
+    strcpy(btnTxt, text);
+    button->text=btnTxt;
+    button->backgroundColor=backgroundColor;
+    button->foregroundColor=foregroundColor;
+    button->font=loadTTF(game, pathToFontFile, round(height/2));
+    int textWidth=al_get_text_width(button->font->font, btnTxt);
+    if (textWidth > width-20)
+        button->width=textWidth+20;
     return button;
 }
 
