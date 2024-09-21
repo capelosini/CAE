@@ -98,13 +98,13 @@ int main(){
     mainMenu = createScene(game, NULL);
     setEventFunction(game, handleEvent);
 
-    Bitmap* demoBitmap = loadBitmap(game, "./demo.bmp");
+    ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50);
     square2 = createGameObject(SOLID, 300, 300, 50, 50);
     GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150);
-    GameObject* square4 = createGameObject(SPRITE, 100, 100, 300, 300);
+    GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300);
     
     square->collisionEnabled=1;
     square->collisionType=COLLISION_CIRCLE;
@@ -114,7 +114,7 @@ int main(){
     
     setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
     setGameObjectBitmap(square3, loadBitmap(game, "./demoTree.png"));
-    setGameObjectBitmap(square4, createSubBitmap(game, square3->bitmap, 0, 0, -1, -1));
+    setGameObjectBitmap(square4, createSubBitmap(game, square3->bitmap, 0, 0, 500, 500));
     square2->color=al_map_rgb(255, 0, 0);
     
     addGameObjectToScene(mainScene, square);
@@ -143,7 +143,6 @@ int main(){
 
     while (game->isAlive){
         render(game);
-        al_draw_bitmap(square4->bitmap->bitmap, 200, 200, 0);
     }
 
     freeGame(game);
