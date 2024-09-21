@@ -120,6 +120,22 @@ void renderText(Text* text){
     }
 }
 
+// TRANSFORM GLOBAL POSITION TO CAMERA POSITION
+void globalToLocal(Scene* scene, float* x, float* y){
+    if (*x < 0 && scene->camera.offset.x < 0)
+        *x=fabs(*x) - fabs(scene->camera.offset.x);
+    else
+        *x-=scene->camera.offset.x;
+    if (*y < 0 && scene->camera.offset.y < 0)
+        *y=fabs(*y) - fabs(scene->camera.offset.y);
+    else
+        *y-=scene->camera.offset.y;
+    if (*x > scene->camera.offset.x)
+        *x=fabs(*x);
+    if (*y > scene->camera.offset.y)
+        *y=fabs(*y);
+}
+
 void render(CAEngine* engine){
     Scene* scene = engine->currentScene;
     char drawTime = 0;
@@ -165,6 +181,19 @@ void render(CAEngine* engine){
         return;
 
     al_clear_to_color(scene->backgroundColor);
+
+    // RENDER WORLD TILES
+    if (scene->world != NULL){
+        LinkedItem* item = scene->world->tiles->first;
+        while (item != NULL){
+            Tile* tile = (Tile*)item->data;
+            float x = tile->x*scene->world->tileWidth;
+            float y = tile->y*scene->world->tileHeight;
+            globalToLocal(scene, &x, &y);
+            al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, scene->world->tileWidth, scene->world->tileHeight, 0);
+            item = item->next;
+        }
+    }
 
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
     if (scene->scriptFunction != NULL)
@@ -306,20 +335,21 @@ void render(CAEngine* engine){
         }
 
         // TRANSFORM THE GLOBAL POSITION OF EVERYTHING IN LOCAL POSITION
-        if (x < 0 && scene->camera.offset.x < 0)
-            x=fabs(x) - fabs(scene->camera.offset.x);
-        else
-            x-=scene->camera.offset.x;
-        if (y < 0 && scene->camera.offset.y < 0)
-            y=fabs(y) - fabs(scene->camera.offset.y);
-        else
-            y-=scene->camera.offset.y;
+        // if (x < 0 && scene->camera.offset.x < 0)
+        //     x=fabs(x) - fabs(scene->camera.offset.x);
+        // else
+        //     x-=scene->camera.offset.x;
+        // if (y < 0 && scene->camera.offset.y < 0)
+        //     y=fabs(y) - fabs(scene->camera.offset.y);
+        // else
+        //     y-=scene->camera.offset.y;
 
-        if (x > scene->camera.offset.x)
-            x=fabs(x);
-        if (y > scene->camera.offset.y)
-            y=fabs(y);
+        // if (x > scene->camera.offset.x)
+        //     x=fabs(x);
+        // if (y > scene->camera.offset.y)
+        //     y=fabs(y);
 
+        globalToLocal(scene, &x, &y);
         
         // DRAW EACH TYPE OF GAME OBJECT
         switch (obj->type){
@@ -479,6 +509,7 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->ui.buttons=createLinkedList(LLFFFreeButtons);
     scene->ui.texts=createLinkedList(LLFFFreeTexts);
     scene->ui.visible=1;
+    scene->world=NULL;
 
     addItemToLinkedList(engine->scenes, scene);
     return scene;
@@ -488,7 +519,28 @@ void freeScene(Scene* scene){
     freeLinkedList(scene->objects);
     freeLinkedList(scene->ui.buttons);
     freeLinkedList(scene->ui.texts);
+    if (scene->world != NULL){
+        freeLinkedList(scene->world->tiles);
+        free(scene->world);
+    }
     free(scene);
+}
+
+void setupSceneWorld(Scene* scene, ALLEGRO_BITMAP* tileSheet, int tileWidth, int tileHeight){
+    scene->world = (World*)malloc(sizeof(World));
+    scene->world->tileSheet=tileSheet;
+    scene->world->tileWidth=tileWidth;
+    scene->world->tileHeight=tileHeight;
+    scene->world->tiles=createLinkedList(NULL);
+}
+
+void addWorldTile(Scene* scene, int idX, int idY, int tileX, int tileY){
+    Tile* tile = (Tile*)malloc(sizeof(Tile));
+    tile->idX=idX;
+    tile->idY=idY;
+    tile->x=tileX;
+    tile->y=tileY;
+    addItemToLinkedList(scene->world->tiles, tile);
 }
 
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, Scene* scene){

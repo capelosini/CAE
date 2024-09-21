@@ -101,6 +101,20 @@ int main(){
     square->physics.maxSpeed=5;
     //square->physics.gravity=1;
 
+    setupSceneWorld(mainScene, loadBitmap(engine, "tileSheet.png"), 32, 32);
+    for (int i=0; i<20; i++){
+        for (int j=0; j<20; j++){
+            if (i==0 && j==0){
+                addWorldTile(mainScene, 0, 0, j, i);
+            } else if (i==0){
+                addWorldTile(mainScene, 1, 0, j, i);
+            } 
+            else{
+                addWorldTile(mainScene, 1, 1, j, i);
+            }
+        }
+    }
+
     changeScene(engine, mainScene);
     // MAIN MENYH
     int size=70;

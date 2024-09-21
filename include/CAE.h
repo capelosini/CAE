@@ -113,6 +113,22 @@ struct UI{
     LinkedList* texts;
 };
 
+typedef struct Tile Tile;
+struct Tile{
+    int x;
+    int y;
+    int idX;
+    int idY;
+};
+
+typedef struct World World;
+struct World{
+    ALLEGRO_BITMAP* tileSheet;
+    int tileWidth;
+    int tileHeight;
+    LinkedList* tiles;
+};
+
 typedef struct Scene Scene;
 struct Scene{
     GameCamera camera;
@@ -121,6 +137,7 @@ struct Scene{
     float gravityValue;
     ALLEGRO_COLOR backgroundColor;
     UI ui;
+    World* world;
 };
 
 typedef struct Font Font;
@@ -178,6 +195,7 @@ void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine*));
 void renderButton(Button* button);
 void renderText(Text* text);
+void globalToLocal(Scene* scene, float* x, float* y);
 void render(CAEngine* engine);
 // GameObjectList* createGameObjectList();
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
@@ -191,6 +209,8 @@ void printList(LinkedList* list);
 // void freeGameObjectList(GameObjectList* list);
 Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
+void setupSceneWorld(Scene* scene, ALLEGRO_BITMAP* tileSheet, int tileWidth, int tileHeight);
+void addWorldTile(Scene* scene, int idX, int idY, int tileX, int tileY);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, Scene* scene);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, char* pathToBitmap);
