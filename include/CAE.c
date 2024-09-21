@@ -76,7 +76,7 @@ CAEngine* initEngine(GameConfig config){
     return engine;
 }
 
-void freeGame(CAEngine* engine){
+void freeEngine(CAEngine* engine){
     freeLinkedList(engine->scenes);
     freeLinkedList(engine->bitmaps);
     freeLinkedList(engine->fonts);
@@ -320,8 +320,8 @@ void render(CAEngine* engine){
         if (y > scene->camera.offset.y)
             y=fabs(y);
 
-        //printf("Rendered cube at (%f, %f)\n", x, y);
-
+        
+        // DRAW EACH TYPE OF GAME OBJECT
         switch (obj->type){
             case SOLID:
                 al_draw_filled_rectangle(x, y, x+obj->width, y+obj->height, obj->color);
@@ -364,14 +364,6 @@ void render(CAEngine* engine){
 
     al_flip_display();
 }
-
-// GameObjectList* createGameObjectList(){
-//     GameObjectList* list = (GameObjectList*)malloc(sizeof(GameObjectList));
-//     list->first=NULL;
-//     list->last=NULL;
-//     list->length=0;
-//     return list;
-// }
 
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item)){
     LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
@@ -499,7 +491,7 @@ void freeScene(Scene* scene){
     free(scene);
 }
 
-GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height){
+GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, Scene* scene){
     GameObject* newObj = (GameObject*)malloc(sizeof(GameObject));
     newObj->type=type;
     newObj->position.x=x;
@@ -523,7 +515,22 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->animation.direction.y=1;
     newObj->collisionEnabled=0;
     newObj->collisionType=COLLISION_RECT;
+
+    addGameObjectToScene(scene, newObj);
+
     return newObj;
+}
+
+void addGameObjectToScene(Scene* scene, GameObject* obj){
+    // VERIFY IF IS ALREADY IN THE SCENE
+    LinkedItem* item = scene->objects->first;
+    while (item != NULL){
+        if (item->data == obj){
+            return;
+        }
+        item=item->next;
+    }
+    addItemToLinkedList(scene->objects, obj);
 }
 
 ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, char* pathToBitmap){
@@ -554,10 +561,6 @@ void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWi
 
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color){
     al_convert_mask_to_alpha(bm, color);
-}
-
-void addGameObjectToScene(Scene* scene, GameObject* obj){
-    addItemToLinkedList(scene->objects, obj);
 }
 
 // float dist(GameObject* a, GameObject* b){

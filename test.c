@@ -10,37 +10,13 @@ Scene* mainMenu;
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
         switch (ev.keyboard.keycode){
-            // case ALLEGRO_KEY_A:
-            //     square->physics.directions.x=-1;
-            //     square->physics.acc.x=1;
-            //     square->animation.direction.x=-1;
-            //     break;
-            // case ALLEGRO_KEY_D:
-            //     square->physics.directions.x=1;
-            //     square->physics.acc.x=1;
-            //     square->animation.direction.x=1;
-            //     break;
-            // case ALLEGRO_KEY_W:
-            //     square->physics.directions.y=-1;
-            //     square->physics.acc.y=1;
-            //     break;
-            // case ALLEGRO_KEY_S:
-            //     square->physics.directions.y=1;
-            //     square->physics.acc.y=1;
-            //     break;
             case ALLEGRO_KEY_ESCAPE:
                 engine->isAlive=0;
                 break;
+            default:
+                break;
         }
     } 
-    // else if (ev.type == ALLEGRO_EVENT_KEY_UP){
-    //     if (ev.keyboard.keycode == ALLEGRO_KEY_A || ev.keyboard.keycode == ALLEGRO_KEY_D){
-    //         square->physics.acc.x=0;
-    //     }
-    //     if (ev.keyboard.keycode == ALLEGRO_KEY_W || ev.keyboard.keycode == ALLEGRO_KEY_S){
-    //         square->physics.acc.y=0;
-    //     }
-    // }
 }
 
 void mainSceneScript(Scene* self){
@@ -101,10 +77,10 @@ int main(){
     ALLEGRO_BITMAP* demoBitmap = loadBitmap(engine, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
-    square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50);
-    square2 = createGameObject(SOLID, 300, 300, 50, 50);
-    GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150);
-    GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300);
+    square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50, mainScene);
+    square2 = createGameObject(SOLID, 300, 300, 50, 50, mainScene);
+    GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150, mainScene);
+    GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300, mainScene);
     
     square->collisionEnabled=1;
     square->collisionType=COLLISION_CIRCLE;
@@ -116,11 +92,6 @@ int main(){
     setGameObjectBitmap(square3, loadBitmap(engine, "./demoTree.png"));
     setGameObjectBitmap(square4, createSubBitmap(engine, square3->bitmap, 0, 0, 500, 500));
     square2->color=al_map_rgb(255, 0, 0);
-    
-    addGameObjectToScene(mainScene, square);
-    addGameObjectToScene(mainScene, square2);
-    addGameObjectToScene(mainScene, square3);
-    addGameObjectToScene(mainScene, square4);
 
     mainScene->camera.followTarget=square;
 
@@ -145,7 +116,7 @@ int main(){
         render(engine);
     }
 
-    freeGame(engine);
+    freeEngine(engine);
 
     printf("Exited!\n");
 
