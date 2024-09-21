@@ -152,15 +152,15 @@ struct Button{
     unsigned char visible;
 };
 
-typedef struct Game Game;
-struct Game{
+typedef struct CAEngine CAEngine;
+struct CAEngine{
     char isAlive;
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *ev_queue;
     ALLEGRO_TIMER *timer;
     int displayWidth;
     int displayHeight;
-    void (*eventFunction)(ALLEGRO_EVENT, Scene*, Game*);
+    void (*eventFunction)(ALLEGRO_EVENT, Scene*, CAEngine*);
     LinkedList* bitmaps;
     LinkedList* scenes;
     LinkedList* fonts;
@@ -172,13 +172,13 @@ void LLFFFreeTexts(LinkedItem* item);
 void LLFFDestroyBitmaps(LinkedItem* item);
 void LLFFDestroyFonts(LinkedItem* item);
 void LLFFFreeScenes(LinkedItem* item);
-Game* initGame(GameConfig config);
-void freeGame(Game* game);
-void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source);
-void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game*));
+CAEngine* initEngine(GameConfig config);
+void freeGame(CAEngine* engine);
+void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source);
+void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine*));
 void renderButton(Button* button);
 void renderText(Text* text);
-void render(Game* game);
+void render(CAEngine* engine);
 // GameObjectList* createGameObjectList();
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
 void freeLinkedItem(LinkedItem* item);
@@ -189,23 +189,23 @@ void removeItemLinkedList(LinkedList* list, void* searchData);
 void printList(LinkedList* list);
 // void freeGameObjects(GameObject* obj);
 // void freeGameObjectList(GameObjectList* list);
-Scene* createScene(Game* game, void (*scriptFunction)(Scene*));
+Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height);
-ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap);
-ALLEGRO_BITMAP* createSubBitmap(Game* game, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh);
+ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, char* pathToBitmap);
+ALLEGRO_BITMAP* createSubBitmap(CAEngine* engine, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh);
 void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
-void changeScene(Game* game, Scene* scene);
+void changeScene(CAEngine* engine, Scene* scene);
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
-Font* loadTTF(Game* game, char* path, int size);
+Font* loadTTF(CAEngine* engine, char* path, int size);
 Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
 void addTextToScene(Scene* scene, Text* text);
-Button* createButton(Game* game, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
+Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
 void addButtonToScene(Scene* scene, Button* button);
 
 #endif

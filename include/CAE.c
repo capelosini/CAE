@@ -34,7 +34,7 @@ void LLFFFreeScenes(LinkedItem* item){
     printf("\nFreed a Scene!");
 }
 
-Game* initGame(GameConfig config){
+CAEngine* initEngine(GameConfig config){
     al_init();
     al_init_primitives_addon();
     al_init_image_addon();
@@ -42,7 +42,7 @@ Game* initGame(GameConfig config){
     al_install_mouse();
     al_init_font_addon();
     al_init_ttf_addon();
-    Game* game = (Game*)malloc(sizeof(Game));
+    CAEngine* engine = (CAEngine*)malloc(sizeof(CAEngine));
     if (config.fullscreen){
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
         ALLEGRO_MONITOR_INFO info;
@@ -51,53 +51,53 @@ Game* initGame(GameConfig config){
         config.sizeY = info.y2 - info.y1;
     }
 
-    game->display = al_create_display(config.sizeX, config.sizeY);
-    game->displayWidth = config.sizeX;
-    game->displayHeight = config.sizeY;
+    engine->display = al_create_display(config.sizeX, config.sizeY);
+    engine->displayWidth = config.sizeX;
+    engine->displayHeight = config.sizeY;
     if (!config.fullscreen){
-        al_set_window_position(game->display, config.posX, config.posY);
+        al_set_window_position(engine->display, config.posX, config.posY);
     }
-    al_set_window_title(game->display, config.title);
-    game->ev_queue = al_create_event_queue();
-    game->timer = al_create_timer(1.0 / config.fps);
-    game->isAlive = 1;
-    game->bitmaps = createLinkedList(LLFFDestroyBitmaps);
-    game->scenes = createLinkedList(LLFFFreeScenes);
-    game->fonts = createLinkedList(LLFFDestroyFonts);
-    game->currentScene=NULL;
+    al_set_window_title(engine->display, config.title);
+    engine->ev_queue = al_create_event_queue();
+    engine->timer = al_create_timer(1.0 / config.fps);
+    engine->isAlive = 1;
+    engine->bitmaps = createLinkedList(LLFFDestroyBitmaps);
+    engine->scenes = createLinkedList(LLFFFreeScenes);
+    engine->fonts = createLinkedList(LLFFDestroyFonts);
+    engine->currentScene=NULL;
 
-    al_register_event_source(game->ev_queue, al_get_display_event_source(game->display));
-    al_register_event_source(game->ev_queue, al_get_keyboard_event_source());
-    al_register_event_source(game->ev_queue, al_get_mouse_event_source()); 
-    al_register_event_source(game->ev_queue, al_get_timer_event_source(game->timer));
+    al_register_event_source(engine->ev_queue, al_get_display_event_source(engine->display));
+    al_register_event_source(engine->ev_queue, al_get_keyboard_event_source());
+    al_register_event_source(engine->ev_queue, al_get_mouse_event_source()); 
+    al_register_event_source(engine->ev_queue, al_get_timer_event_source(engine->timer));
 
-    al_start_timer(game->timer);
+    al_start_timer(engine->timer);
 
-    return game;
+    return engine;
 }
 
-void freeGame(Game* game){
-    freeLinkedList(game->scenes);
-    freeLinkedList(game->bitmaps);
-    freeLinkedList(game->fonts);
-    al_destroy_display(game->display);
-    al_destroy_event_queue(game->ev_queue);
-    al_destroy_timer(game->timer);
+void freeGame(CAEngine* engine){
+    freeLinkedList(engine->scenes);
+    freeLinkedList(engine->bitmaps);
+    freeLinkedList(engine->fonts);
+    al_destroy_display(engine->display);
+    al_destroy_event_queue(engine->ev_queue);
+    al_destroy_timer(engine->timer);
     al_uninstall_keyboard();
     al_uninstall_mouse();
-    free(game);
+    free(engine);
     al_shutdown_primitives_addon();
     al_shutdown_font_addon();
     al_shutdown_image_addon();
     al_shutdown_ttf_addon();
 }
 
-void addEventSource(Game* game, ALLEGRO_EVENT_SOURCE* ev_source){
-    al_register_event_source(game->ev_queue, ev_source);
+void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source){
+    al_register_event_source(engine->ev_queue, ev_source);
 }
 
-void setEventFunction(Game* game, void (*f)(ALLEGRO_EVENT, Scene*, Game* game)){
-    game->eventFunction = f;
+void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine* engine)){
+    engine->eventFunction = f;
 }
 
 void renderButton(Button* button){
@@ -120,14 +120,14 @@ void renderText(Text* text){
     }
 }
 
-void render(Game* game){
-    Scene* scene = game->currentScene;
+void render(CAEngine* engine){
+    Scene* scene = engine->currentScene;
     char drawTime = 0;
     do {
         ALLEGRO_EVENT ev;
-        al_wait_for_event(game->ev_queue, &ev);
+        al_wait_for_event(engine->ev_queue, &ev);
         if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
-            game->isAlive=0;
+            engine->isAlive=0;
             return;
         }
         else if (ev.type == ALLEGRO_EVENT_TIMER) {
@@ -156,10 +156,10 @@ void render(Game* game){
             }
         }
 
-        if (scene != NULL && game->eventFunction != NULL)
-            game->eventFunction(ev, scene, game);
+        if (scene != NULL && engine->eventFunction != NULL)
+            engine->eventFunction(ev, scene, engine);
 
-    } while(!al_is_event_queue_empty(game->ev_queue));
+    } while(!al_is_event_queue_empty(engine->ev_queue));
 
     if (scene == NULL || !drawTime)
         return;
@@ -174,8 +174,8 @@ void render(Game* game){
     if (scene->camera.followTarget != NULL){
         char dirX=0;
         char dirY=0;
-        int viewX=scene->camera.offset.x+game->displayWidth/2;
-        int viewY=scene->camera.offset.y+game->displayHeight/2;
+        int viewX=scene->camera.offset.x+engine->displayWidth/2;
+        int viewY=scene->camera.offset.y+engine->displayHeight/2;
         int targetX=scene->camera.followTarget->position.x+scene->camera.followTarget->width/2;
         int targetY=scene->camera.followTarget->position.y+scene->camera.followTarget->height/2;
         int difX=abs(targetX-viewX);
@@ -300,7 +300,7 @@ void render(Game* game){
         }
 
         // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!((obj->position.x+obj->width > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+game->displayWidth) && (obj->position.y+obj->height > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+game->displayHeight))){
+        if (!((obj->position.x+obj->width > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+engine->displayWidth) && (obj->position.y+obj->height > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+engine->displayHeight))){
             item=item->next;
             continue;
         }
@@ -472,7 +472,7 @@ void printList(LinkedList* list){
 //     free(list);
 // }
 
-Scene* createScene(Game* game, void (*scriptFunction)(Scene*)){
+Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
     scene->objects = createLinkedList(NULL);
     scene->camera.offset.x=0.;
@@ -488,7 +488,7 @@ Scene* createScene(Game* game, void (*scriptFunction)(Scene*)){
     scene->ui.texts=createLinkedList(LLFFFreeTexts);
     scene->ui.visible=1;
 
-    addItemToLinkedList(game->scenes, scene);
+    addItemToLinkedList(engine->scenes, scene);
     return scene;
 }
 
@@ -526,15 +526,15 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     return newObj;
 }
 
-ALLEGRO_BITMAP* loadBitmap(Game* game, char* pathToBitmap){
+ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, char* pathToBitmap){
     ALLEGRO_BITMAP* bm = al_load_bitmap(pathToBitmap);
-    addItemToLinkedList(game->bitmaps, bm);
+    addItemToLinkedList(engine->bitmaps, bm);
     return bm;
 }
 
-ALLEGRO_BITMAP* createSubBitmap(Game* game, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh){
+ALLEGRO_BITMAP* createSubBitmap(CAEngine* engine, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh){
     ALLEGRO_BITMAP* subBitmap = al_create_sub_bitmap(bitmap, sx, sy, sw, sh);
-    addItemToLinkedList(game->bitmaps, subBitmap);
+    addItemToLinkedList(engine->bitmaps, subBitmap);
     return subBitmap;
 }
 
@@ -579,20 +579,20 @@ char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float 
     return x1+w1 > x2 && x1 < x2+w2 && y1+h1 > y2 && y1 < y2+h2;
 }
 
-void changeScene(Game* game, Scene* scene){
-    game->currentScene=scene;
+void changeScene(CAEngine* engine, Scene* scene){
+    engine->currentScene=scene;
 }
 
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
     obj->bitmap=bitmap;
 }
 
-Font* loadTTF(Game* game, char* path, int size){
+Font* loadTTF(CAEngine* engine, char* path, int size){
     Font* font = (Font*)malloc(sizeof(Font));
     ALLEGRO_FONT* ttf = al_load_ttf_font(path, size, 0);
     font->font=ttf;
     font->size=size;
-    addItemToLinkedList(game->fonts, font);
+    addItemToLinkedList(engine->fonts, font);
     return font;
 }
 
@@ -613,7 +613,7 @@ void addTextToScene(Scene* scene, Text* text){
     addItemToLinkedList(scene->ui.texts, text);
 }
 
-Button* createButton(Game* game, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){
+Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){
     Button* button = (Button*)malloc(sizeof(Button));
     button->position.x=x;
     button->position.y=y;
@@ -627,7 +627,7 @@ Button* createButton(Game* game, float x, float y, int width, int height, ALLEGR
     button->text=btnTxt;
     button->backgroundColor=backgroundColor;
     button->foregroundColor=foregroundColor;
-    button->font=loadTTF(game, pathToFontFile, round(height/2));
+    button->font=loadTTF(engine, pathToFontFile, round(height/2));
     int textWidth=al_get_text_width(button->font->font, btnTxt);
     if (textWidth > width-20)
         button->width=textWidth+20;

@@ -1,13 +1,13 @@
 #include "include/CAE.h"
 #include <stdio.h>
 
-Game* game;
+CAEngine* engine;
 GameObject* square;
 GameObject* square2;
 Scene* mainScene;
 Scene* mainMenu;
 
-void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
+void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
         switch (ev.keyboard.keycode){
             // case ALLEGRO_KEY_A:
@@ -29,7 +29,7 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, Game* game){
             //     square->physics.acc.y=1;
             //     break;
             case ALLEGRO_KEY_ESCAPE:
-                game->isAlive=0;
+                engine->isAlive=0;
                 break;
         }
     } 
@@ -76,11 +76,11 @@ void mainSceneScript(Scene* self){
 }
 
 void onTestButtonClick(Scene* scene){
-    changeScene(game, mainMenu);
+    changeScene(engine, mainMenu);
 }
 
 void startGameButtonClicked(Scene* scene) {
-    changeScene(game, mainScene);
+    changeScene(engine, mainScene);
 }
 
 int main(){
@@ -93,12 +93,12 @@ int main(){
     config.sizeY=1080;
     config.title="Test CAE";
 
-    game = initGame(config);
-    mainScene = createScene(game, mainSceneScript);
-    mainMenu = createScene(game, NULL);
-    setEventFunction(game, handleEvent);
+    engine = initEngine(config);
+    mainScene = createScene(engine, mainSceneScript);
+    mainMenu = createScene(engine, NULL);
+    setEventFunction(engine, handleEvent);
 
-    ALLEGRO_BITMAP* demoBitmap = loadBitmap(game, "./demo.bmp");
+    ALLEGRO_BITMAP* demoBitmap = loadBitmap(engine, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50);
@@ -113,8 +113,8 @@ int main(){
     square3->collisionType=COLLISION_CIRCLE;
     
     setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
-    setGameObjectBitmap(square3, loadBitmap(game, "./demoTree.png"));
-    setGameObjectBitmap(square4, createSubBitmap(game, square3->bitmap, 0, 0, 500, 500));
+    setGameObjectBitmap(square3, loadBitmap(engine, "./demoTree.png"));
+    setGameObjectBitmap(square4, createSubBitmap(engine, square3->bitmap, 0, 0, 500, 500));
     square2->color=al_map_rgb(255, 0, 0);
     
     addGameObjectToScene(mainScene, square);
@@ -130,22 +130,22 @@ int main(){
     square->physics.maxSpeed=5;
     //square->physics.gravity=1;
 
-    changeScene(game, mainScene);
+    changeScene(engine, mainScene);
     // MAIN MENYH
     int size=70;
-    Font* arialFont = loadTTF(game, "./arial.ttf", 20);
+    Font* arialFont = loadTTF(engine, "./arial.ttf", 20);
     char* title = "Main menu";
-    addTextToScene(mainMenu, createText(title,game->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, al_map_rgb(255, 255, 255), arialFont));
-    addButtonToScene(mainMenu, createButton(game, game->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./arial.ttf", createSubBitmap(game, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
+    addTextToScene(mainMenu, createText(title,engine->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, al_map_rgb(255, 255, 255), arialFont));
+    addButtonToScene(mainMenu, createButton(engine, engine->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./arial.ttf", createSubBitmap(engine, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
     // MAIN SCENE
     addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
-    addButtonToScene(mainScene, createButton(game, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./arial.ttf", NULL, onTestButtonClick));
+    addButtonToScene(mainScene, createButton(engine, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./arial.ttf", NULL, onTestButtonClick));
 
-    while (game->isAlive){
-        render(game);
+    while (engine->isAlive){
+        render(engine);
     }
 
-    freeGame(game);
+    freeGame(engine);
 
     printf("Exited!\n");
 
