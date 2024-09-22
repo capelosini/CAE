@@ -837,3 +837,10 @@ ProgressBar* createProgressBar(float x, float y, int width, int height, float in
 void addProgressBarToScene(Scene* scene, ProgressBar* bar){
     addItemToLinkedList(scene->ui.progressBars, bar);
 }
+
+void changeText(Text* text, const char* newText){
+    char* t = (char*)malloc(sizeof(char)*strlen(newText)+1);
+    strcpy(t, newText);
+    free(text->text);
+    text->text=t;
+}

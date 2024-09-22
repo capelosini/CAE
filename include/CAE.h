@@ -263,5 +263,6 @@ Button* createButton(CAEngine* engine, float x, float y, int width, int height, 
 void addButtonToScene(Scene* scene, Button* button);
 ProgressBar* createProgressBar(float x, float y, int width, int height, float initValue, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor);
 void addProgressBarToScene(Scene* scene, ProgressBar* bar);
+void changeText(Text* text, const char* newText);
 
 #endif
