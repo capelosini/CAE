@@ -79,12 +79,12 @@ int main(){
     mainMenu = createScene(engine, NULL);
     setEventFunction(engine, handleEvent);
 
-    c418 = loadAudioStream(engine, "./c418.opus", 2, 2048);
-    sfx = loadAudioSample(engine, "./sfx.wav");
+    c418 = loadAudioStream(engine, "./sounds/c418.opus", 2, 2048);
+    sfx = loadAudioSample(engine, "./sounds/sfx.wav");
     configureAudioStream(c418, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP);
     playAudioStream(c418);
 
-    ALLEGRO_BITMAP* demoBitmap = loadBitmap(engine, "./demo.bmp");
+    ALLEGRO_BITMAP* demoBitmap = loadBitmap(engine, "./images/demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50, mainScene);
@@ -99,7 +99,7 @@ int main(){
     square3->collisionType=COLLISION_CIRCLE;
     
     setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
-    setGameObjectBitmap(square3, loadBitmap(engine, "./demoTree.png"));
+    setGameObjectBitmap(square3, loadBitmap(engine, "./images/demoTree.png"));
     setGameObjectBitmap(square4, createSubBitmap(engine, square3->bitmap, 0, 0, 500, 500));
     square2->color=al_map_rgb(255, 0, 0);
 
@@ -111,7 +111,7 @@ int main(){
     square->physics.maxSpeed=5;
     //square->physics.gravity=1;
 
-    setupSceneWorld(mainScene, loadBitmap(engine, "tileSheet.png"), 32, 32);
+    setupSceneWorld(mainScene, loadBitmap(engine, "./images/tileSheet.png"), 32, 32);
     for (int i=0; i<20; i++){
         for (int j=0; j<20; j++){
             if (i==0 && j==0){
@@ -128,13 +128,13 @@ int main(){
     changeScene(engine, mainScene);
     // MAIN MENYH
     int size=70;
-    Font* arialFont = loadTTF(engine, "./arial.ttf", 20);
+    Font* arialFont = loadTTF(engine, "./fonts/arial.ttf", 20);
     char* title = "Main menu";
     addTextToScene(mainMenu, createText(title,engine->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, al_map_rgb(255, 255, 255), arialFont));
-    addButtonToScene(mainMenu, createButton(engine, engine->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./arial.ttf", createSubBitmap(engine, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
+    addButtonToScene(mainMenu, createButton(engine, engine->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./fonts/arial.ttf", createSubBitmap(engine, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
     // MAIN SCENE
     addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
-    addButtonToScene(mainScene, createButton(engine, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./arial.ttf", NULL, onTestButtonClick));
+    addButtonToScene(mainScene, createButton(engine, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./fonts/arial.ttf", NULL, onTestButtonClick));
 
     while (engine->isAlive){
         render(engine);
