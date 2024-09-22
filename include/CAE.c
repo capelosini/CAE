@@ -141,7 +141,7 @@ void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source){
     al_register_event_source(engine->ev_queue, ev_source);
 }
 
-void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine* engine)){
+void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine*)){
     engine->eventFunction = f;
 }
 
@@ -374,6 +374,8 @@ void render(CAEngine* engine){
                             break;
                     }
                     if (hasCollision){
+                        if (obj->onCollision != NULL)
+                            obj->onCollision(obj, obj2);
                         break;
                     }
                 }
@@ -684,10 +686,15 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->animation.direction.y=1;
     newObj->collisionEnabled=0;
     newObj->collisionType=COLLISION_RECT;
+    newObj->onCollision=NULL;
 
     addGameObjectToScene(scene, newObj);
 
     return newObj;
+}
+
+void setOnGameObjectCollisionFunction(GameObject* obj, void (*onCollision)(GameObject*, GameObject*)){
+    obj->onCollision=onCollision;
 }
 
 void addGameObjectToScene(Scene* scene, GameObject* obj){

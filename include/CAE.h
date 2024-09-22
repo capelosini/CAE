@@ -78,6 +78,7 @@ struct GameObject{
     ALLEGRO_BITMAP* bitmap;
     unsigned char collisionEnabled;
     enum COLLISION_TYPE collisionType;
+    void (*onCollision)(GameObject*, GameObject*);
 };
 
 typedef struct LinkedItem LinkedItem;
@@ -244,6 +245,7 @@ void freeScene(Scene* scene);
 void setupSceneWorld(Scene* scene, ALLEGRO_BITMAP* tileSheet, int tileWidth, int tileHeight);
 void addWorldTile(Scene* scene, int idX, int idY, int tileX, int tileY);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, Scene* scene);
+void setOnGameObjectCollisionFunction(GameObject* obj, void (*onCollision)(GameObject*, GameObject*));
 void addGameObjectToScene(Scene* scene, GameObject* obj);
 ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, const char* pathToBitmap);
 ALLEGRO_BITMAP* createSubBitmap(CAEngine* engine, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh);

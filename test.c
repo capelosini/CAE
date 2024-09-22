@@ -67,6 +67,14 @@ void startGameButtonClicked(Scene* scene) {
     changeScene(engine, mainScene);
 }
 
+void onPlayerCollision(GameObject* self, GameObject* other){
+    if (other->type == SOLID){
+        printf("\nCOLLISION WITH SOLID!");
+    } else if (other->type == SPRITE){
+        printf("\nCOLLISION WITH SPRITE!");
+    }
+}
+
 int main(){
     GameConfig config;
     config.fps=60;
@@ -91,6 +99,7 @@ int main(){
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
 
     square = createGameObject(ANIMATED_SPRITE, 300, 40, 50, 50, mainScene);
+    setOnGameObjectCollisionFunction(square, onPlayerCollision);
     square2 = createGameObject(SOLID, 300, 300, 50, 50, mainScene);
     GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150, mainScene);
     GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300, mainScene);
