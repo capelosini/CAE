@@ -115,6 +115,7 @@ struct UI{
     unsigned char visible;
     LinkedList* buttons;
     LinkedList* texts;
+    LinkedList* progressBars;
 };
 
 typedef struct Tile Tile;
@@ -173,6 +174,17 @@ struct Button{
     unsigned char visible;
 };
 
+typedef struct ProgressBar ProgressBar;
+struct ProgressBar{
+    Vector2 position;
+    int width;
+    int height;
+    ALLEGRO_COLOR backgroundColor;
+    ALLEGRO_COLOR foregroundColor;
+    float value;
+    unsigned char visible;
+};
+
 typedef struct CAEngine CAEngine;
 struct CAEngine{
     char isAlive;
@@ -206,6 +218,7 @@ void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source);
 void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine*));
 void renderButton(Button* button);
 void renderText(Text* text);
+void renderProgressBar(ProgressBar* bar);
 void globalToLocal(Scene* scene, float* x, float* y);
 void render(CAEngine* engine);
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
@@ -223,9 +236,9 @@ void configureAudioStream(ALLEGRO_AUDIO_STREAM* stream, float gain, float pan, f
 void playAudioStream(ALLEGRO_AUDIO_STREAM* stream);
 void pauseAudioStream(ALLEGRO_AUDIO_STREAM* stream);
 void stopAudioStream(ALLEGRO_AUDIO_STREAM* stream);
-// ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate);
-// void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain);
-// void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream);
+ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate);
+void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain);
+void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream);
 Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 void setupSceneWorld(Scene* scene, ALLEGRO_BITMAP* tileSheet, int tileWidth, int tileHeight);
@@ -246,5 +259,7 @@ Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* 
 void addTextToScene(Scene* scene, Text* text);
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
 void addButtonToScene(Scene* scene, Button* button);
+ProgressBar* createProgressBar(float x, float y, int width, int height, float initValue, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor);
+void addProgressBarToScene(Scene* scene, ProgressBar* bar);
 
 #endif

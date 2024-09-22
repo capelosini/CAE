@@ -165,6 +165,20 @@ void renderText(Text* text){
     }
 }
 
+void renderProgressBar(ProgressBar* bar){
+    if (bar->visible){
+        if (bar->value < 0.)
+            bar->value = 0.;
+        else if (bar->value > 100.)
+            bar->value = 100.;
+        
+        if (bar->value != 100.)
+            al_draw_filled_rounded_rectangle(bar->position.x, bar->position.y, bar->position.x+bar->width, bar->position.y+bar->height, 5, 5, bar->backgroundColor);
+        if (bar->value != 0.)
+            al_draw_filled_rounded_rectangle(bar->position.x, bar->position.y, bar->position.x+bar->width*(bar->value/100), bar->position.y+bar->height, 5, 5, bar->foregroundColor);
+    }
+}
+
 // TRANSFORM GLOBAL POSITION TO CAMERA POSITION
 void globalToLocal(Scene* scene, float* x, float* y){
     if (*x < 0 && scene->camera.offset.x < 0)
@@ -438,6 +452,12 @@ void render(CAEngine* engine){
             renderText((Text*)item->data);
             item=item->next;
         }
+        // PROGRESS BARS
+        item=scene->ui.progressBars->first;
+        while (item!=NULL){
+            renderProgressBar((ProgressBar*)item->data);
+            item=item->next;
+        }
     }
 
     al_flip_display();
@@ -574,20 +594,20 @@ void stopAudioStream(ALLEGRO_AUDIO_STREAM* stream){
     al_rewind_audio_stream(stream);
 }
 
-// ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate){
-//     ALLEGRO_MIXER* mixer = al_create_mixer(sampleRate, ALLEGRO_AUDIO_DEPTH_FLOAT32, ALLEGRO_CHANNEL_CONF_2);
-//     al_attach_mixer_to_voice(mixer, al_get_default_voice());
-//     addItemToLinkedList(engine->audioMixers, mixer);
-//     return mixer;
-// }
+ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate){
+    ALLEGRO_MIXER* mixer = al_create_mixer(sampleRate, ALLEGRO_AUDIO_DEPTH_FLOAT32, ALLEGRO_CHANNEL_CONF_2);
+    al_attach_mixer_to_voice(mixer, al_get_default_voice());
+    addItemToLinkedList(engine->audioMixers, mixer);
+    return mixer;
+}
 
-// void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain){
-//     al_set_mixer_gain(mixer, gain);
-// }
+void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain){
+    al_set_mixer_gain(mixer, gain);
+}
 
-// void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream){
-//     al_attach_audio_stream_to_mixer(stream, mixer);
-// }
+void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream){
+    al_attach_audio_stream_to_mixer(stream, mixer);
+}
 
 Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     Scene* scene = (Scene*)malloc(sizeof(Scene));
@@ -603,6 +623,7 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->backgroundColor=al_map_rgb(30, 30, 30);
     scene->ui.buttons=createLinkedList(LLFFFreeButtons);
     scene->ui.texts=createLinkedList(LLFFFreeTexts);
+    scene->ui.progressBars=createLinkedList(NULL);
     scene->ui.visible=1;
     scene->world=NULL;
 
@@ -614,6 +635,7 @@ void freeScene(Scene* scene){
     freeLinkedList(scene->objects);
     freeLinkedList(scene->ui.buttons);
     freeLinkedList(scene->ui.texts);
+    freeLinkedList(scene->ui.progressBars);
     if (scene->world != NULL){
         freeLinkedList(scene->world->tiles);
         free(scene->world);
@@ -786,4 +808,25 @@ Button* createButton(CAEngine* engine, float x, float y, int width, int height, 
 
 void addButtonToScene(Scene* scene, Button* button){
     addItemToLinkedList(scene->ui.buttons, button);
+}
+
+ProgressBar* createProgressBar(float x, float y, int width, int height, float initValue, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor){
+    ProgressBar* bar = (ProgressBar*)malloc(sizeof(ProgressBar));
+    bar->position.x=x;
+    bar->position.y=y;
+    bar->width=width;
+    bar->height=height;
+    bar->backgroundColor=backgroundColor;
+    bar->foregroundColor=foregroundColor;
+    bar->visible=1;
+    if (initValue < 0)
+        initValue=0.;
+    else if (initValue > 100)
+        initValue=100.;
+    bar->value=initValue;
+    return bar;
+}
+
+void addProgressBarToScene(Scene* scene, ProgressBar* bar){
+    addItemToLinkedList(scene->ui.progressBars, bar);
 }

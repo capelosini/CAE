@@ -8,6 +8,7 @@ Scene* mainScene;
 Scene* mainMenu;
 ALLEGRO_AUDIO_STREAM* c418;
 ALLEGRO_SAMPLE* sfx;
+ProgressBar* playerLifeBar;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
@@ -60,7 +61,9 @@ void onTestButtonClick(Scene* scene){
 }
 
 void startGameButtonClicked(Scene* scene) {
+    playAudioSample(sfx, 0.5, 0, 1, ALLEGRO_PLAYMODE_ONCE);
     playAudioStream(c418);
+    playerLifeBar->value-=15.5;
     changeScene(engine, mainScene);
 }
 
@@ -135,6 +138,8 @@ int main(){
     // MAIN SCENE
     addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
     addButtonToScene(mainScene, createButton(engine, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./fonts/arial.ttf", NULL, onTestButtonClick));
+    playerLifeBar = createProgressBar(engine->displayWidth-400, 50, 200, 20, 100, al_map_rgba(10,10,20,100), al_map_rgba(255,10,10,255));
+    addProgressBarToScene(mainScene, playerLifeBar);
 
     while (engine->isAlive){
         render(engine);
