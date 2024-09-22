@@ -234,8 +234,11 @@ void render(CAEngine* engine){
             Tile* tile = (Tile*)item->data;
             float x = tile->x*scene->world->tileWidth;
             float y = tile->y*scene->world->tileHeight;
-            globalToLocal(scene, &x, &y);
-            al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, scene->world->tileWidth, scene->world->tileHeight, 0);
+            // NOT DRAW IF NOT VISIBLE IN CAMERA
+            if ((x+scene->world->tileWidth > scene->camera.offset.x && x < scene->camera.offset.x+engine->displayWidth) && (y+scene->world->tileHeight > scene->camera.offset.y && y < scene->camera.offset.y+engine->displayHeight)){
+                globalToLocal(scene, &x, &y);
+                al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, scene->world->tileWidth, scene->world->tileHeight, 0);
+            }
             item = item->next;
         }
     }
