@@ -7,41 +7,78 @@
 void LLFFFreeButtons(LinkedItem* item){
     Button* btn = item->data;
     free(btn->text);
-    printf("\nFreed a Button!");
+    if (CAE_DEBUG)
+        printf("\nFreed a Button!");
 }
 
 void LLFFFreeTexts(LinkedItem* item){
     Text* txt = item->data;
     free(txt->text);
-    printf("\nFreed a Text!");
+    if (CAE_DEBUG)
+        printf("\nFreed a Text!");
 }
 
 void LLFFDestroyBitmaps(LinkedItem* item){
     al_destroy_bitmap((ALLEGRO_BITMAP*)item->data);
     item->data=NULL;
-    printf("\nFreed a Bitmap!");
+    if (CAE_DEBUG)
+        printf("\nFreed a Bitmap!");
 }
 
 void LLFFDestroyFonts(LinkedItem* item){
     Font* font = (Font*)item->data;
     al_destroy_font(font->font);
-    printf("\nFreed a Font!");
+    if (CAE_DEBUG)
+        printf("\nFreed a Font!");
 }
 
 void LLFFFreeScenes(LinkedItem* item){
     freeScene((Scene*)item->data);
     item->data=NULL;
-    printf("\nFreed a Scene!");
+    if (CAE_DEBUG)
+        printf("\nFreed a Scene!");
+}
+
+void LLFFDestroyAudioSamples(LinkedItem* item){
+    al_destroy_sample((ALLEGRO_SAMPLE*)item->data);
+    item->data=NULL;
+    if (CAE_DEBUG)
+        printf("\nFreed an Audio Sample!");
+}
+
+void LLFFDestroyAudioStreams(LinkedItem* item){
+    al_destroy_audio_stream((ALLEGRO_AUDIO_STREAM*)item->data);
+    item->data=NULL;
+    if (CAE_DEBUG)
+        printf("\nFreed an Audio Stream!");
+}
+
+void LLFFDestroyAudioMixers(LinkedItem* item){
+    al_destroy_mixer((ALLEGRO_MIXER*)item->data);
+    item->data=NULL;
+    if (CAE_DEBUG)
+        printf("\nFreed an Audio Mixer!");
+}
+
+void assertInit(char result, const char* module){
+    if (!result){
+        printf("\n%s Module failed to initialize!", module);
+        return;
+    }
+    printf("\n%s Module initialized successfully!", module);
 }
 
 CAEngine* initEngine(GameConfig config){
-    al_init();
-    al_init_primitives_addon();
-    al_init_image_addon();
-    al_install_keyboard();
-    al_install_mouse();
-    al_init_font_addon();
-    al_init_ttf_addon();
+    assertInit(al_init(), "Allegro");
+    assertInit(al_init_primitives_addon(), "Primitives");
+    assertInit(al_init_image_addon(), "Image");
+    assertInit(al_install_keyboard(), "Keyboard");
+    assertInit(al_install_mouse(), "Mouse");
+    assertInit(al_init_font_addon(), "Font");
+    assertInit(al_init_ttf_addon(), "TTF");
+    assertInit(al_install_audio(), "Audio");
+    assertInit(al_init_acodec_addon(), "Audio Codecs");
+    assertInit(al_reserve_samples(CAE_RESERVE_SAMPLES), "Audio Samples");
     CAEngine* engine = (CAEngine*)malloc(sizeof(CAEngine));
     if (config.fullscreen){
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
@@ -64,6 +101,10 @@ CAEngine* initEngine(GameConfig config){
     engine->bitmaps = createLinkedList(LLFFDestroyBitmaps);
     engine->scenes = createLinkedList(LLFFFreeScenes);
     engine->fonts = createLinkedList(LLFFDestroyFonts);
+    engine->audioSamples = createLinkedList(LLFFDestroyAudioSamples);
+    engine->audioStreams = createLinkedList(LLFFDestroyAudioStreams);
+    engine->audioMixers = createLinkedList(LLFFDestroyAudioMixers);
+
     engine->currentScene=NULL;
 
     al_register_event_source(engine->ev_queue, al_get_display_event_source(engine->display));
@@ -80,6 +121,9 @@ void freeEngine(CAEngine* engine){
     freeLinkedList(engine->scenes);
     freeLinkedList(engine->bitmaps);
     freeLinkedList(engine->fonts);
+    freeLinkedList(engine->audioSamples);
+    freeLinkedList(engine->audioStreams);
+    freeLinkedList(engine->audioMixers);
     al_destroy_display(engine->display);
     al_destroy_event_queue(engine->ev_queue);
     al_destroy_timer(engine->timer);
@@ -90,6 +134,7 @@ void freeEngine(CAEngine* engine){
     al_shutdown_font_addon();
     al_shutdown_image_addon();
     al_shutdown_ttf_addon();
+    al_uninstall_audio();
 }
 
 void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source){
@@ -417,13 +462,15 @@ void freeLinkedListItems(LinkedItem* item, LinkedList* list){
     if (list->onDestroy != NULL)
         list->onDestroy(item);
     freeLinkedItem(item);
-    printf("\nFreed item!");
+    if (CAE_DEBUG)
+        printf("\nFreed item!");
 }
 
 void freeLinkedList(LinkedList* list){
     freeLinkedListItems(list->first, list);
     free(list);
-    printf("\n");
+    if (CAE_DEBUG)
+        printf("\n");
 }
 
 void addItemToLinkedList(LinkedList* list, void* data){
@@ -481,17 +528,62 @@ void printList(LinkedList* list){
     printf("\n");
 }
 
-// void freeGameObjects(GameObject* obj){
-//     if (obj == NULL)
-//         return;
-//     freeGameObjects(obj->next);
-//     free(obj);
-//     printf("Freed 1 Game Object!\n");
+ALLEGRO_SAMPLE* loadAudioSample(CAEngine* engine, const char* path){
+    ALLEGRO_SAMPLE* sample = al_load_sample(path);
+    addItemToLinkedList(engine->audioSamples, sample);
+    return sample;
+}
+
+ALLEGRO_AUDIO_STREAM* loadAudioStream(CAEngine* engine, const char* path, int buffers, int samples){
+    ALLEGRO_AUDIO_STREAM* stream = al_load_audio_stream(path, buffers, samples);
+    al_attach_audio_stream_to_mixer(stream, al_get_default_mixer());
+    addItemToLinkedList(engine->audioStreams, stream);
+    return stream;
+}
+
+ALLEGRO_SAMPLE_ID playAudioSample(ALLEGRO_SAMPLE* sample, float gain, float pan, float speed, ALLEGRO_PLAYMODE playMode){
+    ALLEGRO_SAMPLE_ID id;
+    al_play_sample(sample, gain, pan, speed, playMode, &id);
+    return id;
+}
+
+void stopAudioSample(ALLEGRO_SAMPLE_ID* sampleId){
+    al_stop_sample(sampleId);
+}
+
+void configureAudioStream(ALLEGRO_AUDIO_STREAM* stream, float gain, float pan, float speed, ALLEGRO_PLAYMODE playMode){
+    al_set_audio_stream_gain(stream, gain);
+    al_set_audio_stream_pan(stream, pan);
+    al_set_audio_stream_speed(stream, speed);
+    al_set_audio_stream_playmode(stream, playMode);
+}
+
+void playAudioStream(ALLEGRO_AUDIO_STREAM* stream){
+    al_set_audio_stream_playing(stream, 1);
+}
+
+void pauseAudioStream(ALLEGRO_AUDIO_STREAM* stream){
+    al_set_audio_stream_playing(stream, 0);
+}
+
+void stopAudioStream(ALLEGRO_AUDIO_STREAM* stream){
+    al_set_audio_stream_playing(stream, 0);
+    al_rewind_audio_stream(stream);
+}
+
+// ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate){
+//     ALLEGRO_MIXER* mixer = al_create_mixer(sampleRate, ALLEGRO_AUDIO_DEPTH_FLOAT32, ALLEGRO_CHANNEL_CONF_2);
+//     al_attach_mixer_to_voice(mixer, al_get_default_voice());
+//     addItemToLinkedList(engine->audioMixers, mixer);
+//     return mixer;
 // }
 
-// void freeGameObjectList(GameObjectList* list){
-//     freeGameObjects(list->first);
-//     free(list);
+// void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain){
+//     al_set_mixer_gain(mixer, gain);
+// }
+
+// void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream){
+//     al_attach_audio_stream_to_mixer(stream, mixer);
 // }
 
 Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
@@ -585,7 +677,7 @@ void addGameObjectToScene(Scene* scene, GameObject* obj){
     addItemToLinkedList(scene->objects, obj);
 }
 
-ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, char* pathToBitmap){
+ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, const char* pathToBitmap){
     ALLEGRO_BITMAP* bm = al_load_bitmap(pathToBitmap);
     addItemToLinkedList(engine->bitmaps, bm);
     return bm;
@@ -642,7 +734,7 @@ void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
     obj->bitmap=bitmap;
 }
 
-Font* loadTTF(CAEngine* engine, char* path, int size){
+Font* loadTTF(CAEngine* engine, const char* path, int size){
     Font* font = (Font*)malloc(sizeof(Font));
     ALLEGRO_FONT* ttf = al_load_ttf_font(path, size, 0);
     font->font=ttf;
@@ -651,7 +743,7 @@ Font* loadTTF(CAEngine* engine, char* path, int size){
     return font;
 }
 
-Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, Font* font){
+Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* font){
     Text* textObj = (Text*)malloc(sizeof(Text));
     char* t = (char*)malloc(sizeof(char)*strlen(text)+1);
     strcpy(t, text);
@@ -668,7 +760,7 @@ void addTextToScene(Scene* scene, Text* text){
     addItemToLinkedList(scene->ui.texts, text);
 }
 
-Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){
+Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){
     Button* button = (Button*)malloc(sizeof(Button));
     button->position.x=x;
     button->position.y=y;

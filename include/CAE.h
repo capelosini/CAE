@@ -1,6 +1,8 @@
 #ifndef CAE_ENGINE_INIT
 #define CAE_ENGINE_INIT
 #define _CRT_SECURE_NO_DEPRECATE
+#define CAE_DEBUG 1
+#define CAE_RESERVE_SAMPLES 18
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
@@ -9,6 +11,8 @@
 #include <allegro5/mouse.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -181,6 +185,9 @@ struct CAEngine{
     LinkedList* bitmaps;
     LinkedList* scenes;
     LinkedList* fonts;
+    LinkedList* audioSamples;
+    LinkedList* audioStreams;
+    LinkedList* audioMixers;
     Scene* currentScene;
 };
 
@@ -189,6 +196,10 @@ void LLFFFreeTexts(LinkedItem* item);
 void LLFFDestroyBitmaps(LinkedItem* item);
 void LLFFDestroyFonts(LinkedItem* item);
 void LLFFFreeScenes(LinkedItem* item);
+void LLFFDestroyAudioSamples(LinkedItem* item);
+void LLFFDestroyAudioStreams(LinkedItem* item);
+void LLFFDestroyAudioMixers(LinkedItem* item);
+void assertInit(char result, const char* module);
 CAEngine* initEngine(GameConfig config);
 void freeEngine(CAEngine* engine);
 void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source);
@@ -197,7 +208,6 @@ void renderButton(Button* button);
 void renderText(Text* text);
 void globalToLocal(Scene* scene, float* x, float* y);
 void render(CAEngine* engine);
-// GameObjectList* createGameObjectList();
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
 void freeLinkedItem(LinkedItem* item);
 void freeLinkedListItems(LinkedItem* item, LinkedList* list);
@@ -205,15 +215,24 @@ void freeLinkedList(LinkedList* list);
 void addItemToLinkedList(LinkedList* list, void* data);
 void removeItemLinkedList(LinkedList* list, void* searchData);
 void printList(LinkedList* list);
-// void freeGameObjects(GameObject* obj);
-// void freeGameObjectList(GameObjectList* list);
+ALLEGRO_SAMPLE* loadAudioSample(CAEngine* engine, const char* path);
+ALLEGRO_AUDIO_STREAM* loadAudioStream(CAEngine* engine, const char* path, int buffers, int samples);
+ALLEGRO_SAMPLE_ID playAudioSample(ALLEGRO_SAMPLE* sample, float gain, float pan, float speed, ALLEGRO_PLAYMODE playMode);
+void stopAudioSample(ALLEGRO_SAMPLE_ID* sampleId);
+void configureAudioStream(ALLEGRO_AUDIO_STREAM* stream, float gain, float pan, float speed, ALLEGRO_PLAYMODE playMode);
+void playAudioStream(ALLEGRO_AUDIO_STREAM* stream);
+void pauseAudioStream(ALLEGRO_AUDIO_STREAM* stream);
+void stopAudioStream(ALLEGRO_AUDIO_STREAM* stream);
+// ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate);
+// void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain);
+// void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream);
 Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*));
 void freeScene(Scene* scene);
 void setupSceneWorld(Scene* scene, ALLEGRO_BITMAP* tileSheet, int tileWidth, int tileHeight);
 void addWorldTile(Scene* scene, int idX, int idY, int tileX, int tileY);
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, Scene* scene);
 void addGameObjectToScene(Scene* scene, GameObject* obj);
-ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, char* pathToBitmap);
+ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, const char* pathToBitmap);
 ALLEGRO_BITMAP* createSubBitmap(CAEngine* engine, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh);
 void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
@@ -222,10 +241,10 @@ char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, floa
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 void changeScene(CAEngine* engine, Scene* scene);
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
-Font* loadTTF(CAEngine* engine, char* path, int size);
-Text* createText(char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
+Font* loadTTF(CAEngine* engine, const char* path, int size);
+Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
 void addTextToScene(Scene* scene, Text* text);
-Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, char* text, char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
+Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
 void addButtonToScene(Scene* scene, Button* button);
 
 #endif

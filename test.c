@@ -6,6 +6,8 @@ GameObject* square;
 GameObject* square2;
 Scene* mainScene;
 Scene* mainMenu;
+ALLEGRO_AUDIO_STREAM* c418;
+ALLEGRO_SAMPLE* sfx;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
@@ -52,10 +54,13 @@ void mainSceneScript(Scene* self){
 }
 
 void onTestButtonClick(Scene* scene){
+    pauseAudioStream(c418);
+    playAudioSample(sfx, 0.5, 0, 1, ALLEGRO_PLAYMODE_ONCE);
     changeScene(engine, mainMenu);
 }
 
 void startGameButtonClicked(Scene* scene) {
+    playAudioStream(c418);
     changeScene(engine, mainScene);
 }
 
@@ -73,6 +78,11 @@ int main(){
     mainScene = createScene(engine, mainSceneScript);
     mainMenu = createScene(engine, NULL);
     setEventFunction(engine, handleEvent);
+
+    c418 = loadAudioStream(engine, "./c418.opus", 2, 2048);
+    sfx = loadAudioSample(engine, "./sfx.wav");
+    configureAudioStream(c418, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP);
+    playAudioStream(c418);
 
     ALLEGRO_BITMAP* demoBitmap = loadBitmap(engine, "./demo.bmp");
     setBitmapTransparentColor(demoBitmap, al_map_rgb(255,0,255));
