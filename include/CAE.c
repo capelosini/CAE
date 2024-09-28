@@ -114,6 +114,9 @@ CAEngine* initEngine(GameConfig config){
 
     al_start_timer(engine->timer);
 
+    engine->startTime=time(NULL);
+    srand(engine->startTime-2);
+
     return engine;
 }
 
@@ -206,7 +209,8 @@ void render(CAEngine* engine){
             return;
         }
         else if (ev.type == ALLEGRO_EVENT_TIMER) {
-            drawTime = 1;
+            if (ev.timer.source == engine->timer)
+                drawTime = 1;
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && scene != NULL) {
             if (scene->ui.visible){
@@ -843,4 +847,8 @@ void changeText(Text* text, const char* newText){
     strcpy(t, newText);
     free(text->text);
     text->text=t;
+}
+
+int randInt(int min, int max){
+    return rand() % (max-min+1) + min;
 }

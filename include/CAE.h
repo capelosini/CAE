@@ -15,6 +15,7 @@
 #include <allegro5/allegro_acodec.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 enum OBJECT_TYPE {
     SOLID,
@@ -202,6 +203,7 @@ struct CAEngine{
     LinkedList* audioStreams;
     LinkedList* audioMixers;
     Scene* currentScene;
+    time_t startTime;
 };
 
 void LLFFFreeButtons(LinkedItem* item);
@@ -264,5 +266,6 @@ void addButtonToScene(Scene* scene, Button* button);
 ProgressBar* createProgressBar(float x, float y, int width, int height, float initValue, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor);
 void addProgressBarToScene(Scene* scene, ProgressBar* bar);
 void changeText(Text* text, const char* newText);
+int randInt(int min, int max);
 
 #endif
