@@ -305,6 +305,20 @@ void render(CAEngine* engine){
         scene->camera.offset.y+=scene->camera.followSpeed.y*dirY;
     }
 
+    // CAMERA OFFSET LIMIT
+    if (scene->camera.minLimit.x != scene->camera.maxLimit.x && scene->camera.minLimit.y != scene->camera.maxLimit.y){
+        if (scene->camera.offset.x < scene->camera.minLimit.x){
+            scene->camera.offset.x=scene->camera.minLimit.x;
+        } else if (scene->camera.offset.x+engine->displayWidth > scene->camera.maxLimit.x){
+            scene->camera.offset.x=scene->camera.maxLimit.x-engine->displayWidth;
+        } 
+        if (scene->camera.offset.y < scene->camera.minLimit.y){
+            scene->camera.offset.y=scene->camera.minLimit.y;
+        } else if (scene->camera.offset.y+engine->displayHeight > scene->camera.maxLimit.y){
+            scene->camera.offset.y=scene->camera.maxLimit.y-engine->displayHeight;
+        }
+    }
+
     // HERE: MY FUNCTION TO MAKE THE RENDER MAGIC, CAMERA ETC
     LinkedItem* item=scene->objects->first;
     while (item!=NULL){
@@ -624,6 +638,8 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->camera.followAcc=0.1;
     scene->camera.followSpeed.x=scene->camera.followSpeed.y=0;
     scene->camera.followMaxSpeed=4;
+    scene->camera.maxLimit.x=scene->camera.maxLimit.y=0;
+    scene->camera.minLimit.x=scene->camera.minLimit.y=0;
     scene->scriptFunction=scriptFunction;
     scene->gravityValue=0.1;
     scene->backgroundColor=al_map_rgb(30, 30, 30);

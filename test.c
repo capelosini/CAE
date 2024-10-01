@@ -87,6 +87,8 @@ int main(){
 
     engine = initEngine(config);
     mainScene = createScene(engine, mainSceneScript);
+    mainScene->camera.maxLimit.x=4800;
+    mainScene->camera.maxLimit.y=4800;
     mainMenu = createScene(engine, NULL);
     setEventFunction(engine, handleEvent);
 
