@@ -16,6 +16,9 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
             case ALLEGRO_KEY_ESCAPE:
                 engine->isAlive=0;
                 break;
+            case ALLEGRO_KEY_SPACE:
+                square2->visible=!square2->visible;
+                break;
             default:
                 break;
         }

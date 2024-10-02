@@ -82,6 +82,7 @@ struct GameObject{
     void (*onCollision)(GameObject*, GameObject*);
     Vector2 startCollisionOffset;
     Vector2 endCollisionOffset;
+    unsigned char visible;
 };
 
 typedef struct LinkedItem LinkedItem;

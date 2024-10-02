@@ -267,42 +267,44 @@ void render(CAEngine* engine){
 
     // CAMERA FOLLOW ACTION
     if (scene->camera.followTarget != NULL){
-        char dirX=0;
-        char dirY=0;
-        int viewX=scene->camera.offset.x+engine->displayWidth/2;
-        int viewY=scene->camera.offset.y+engine->displayHeight/2;
-        int targetX=scene->camera.followTarget->position.x+scene->camera.followTarget->width/2;
-        int targetY=scene->camera.followTarget->position.y+scene->camera.followTarget->height/2;
-        int difX=abs(targetX-viewX);
-        int difY=abs(targetY-viewY);
+        if (scene->camera.followTarget->visible){
+            char dirX=0;
+            char dirY=0;
+            int viewX=scene->camera.offset.x+engine->displayWidth/2;
+            int viewY=scene->camera.offset.y+engine->displayHeight/2;
+            int targetX=scene->camera.followTarget->position.x+scene->camera.followTarget->width/2;
+            int targetY=scene->camera.followTarget->position.y+scene->camera.followTarget->height/2;
+            int difX=abs(targetX-viewX);
+            int difY=abs(targetY-viewY);
 
-        if (targetX > viewX && difX > 3){
-            dirX=1;
-        } else if(targetX < viewX && difX > 3){
-            dirX=-1;
-        } else{
-            scene->camera.followSpeed.x=0;
-        }
-        if (targetY > viewY && difY > 3){
-            dirY=1;
-        } else if(targetY < viewY && difY > 3){
-            dirY=-1;
-        } else{
-            scene->camera.followSpeed.y=0;
-        }
-        if (scene->camera.followSpeed.x < scene->camera.followMaxSpeed){
-            scene->camera.followSpeed.x+=scene->camera.followAcc;
-        } else{
-            scene->camera.followSpeed.x=scene->camera.followMaxSpeed;
-        } 
-        if (scene->camera.followSpeed.y < scene->camera.followMaxSpeed){
-            scene->camera.followSpeed.y+=scene->camera.followAcc;
-        } else{
-            scene->camera.followSpeed.y=scene->camera.followMaxSpeed;
-        }
+            if (targetX > viewX && difX > 3){
+                dirX=1;
+            } else if(targetX < viewX && difX > 3){
+                dirX=-1;
+            } else{
+                scene->camera.followSpeed.x=0;
+            }
+            if (targetY > viewY && difY > 3){
+                dirY=1;
+            } else if(targetY < viewY && difY > 3){
+                dirY=-1;
+            } else{
+                scene->camera.followSpeed.y=0;
+            }
+            if (scene->camera.followSpeed.x < scene->camera.followMaxSpeed){
+                scene->camera.followSpeed.x+=scene->camera.followAcc;
+            } else{
+                scene->camera.followSpeed.x=scene->camera.followMaxSpeed;
+            } 
+            if (scene->camera.followSpeed.y < scene->camera.followMaxSpeed){
+                scene->camera.followSpeed.y+=scene->camera.followAcc;
+            } else{
+                scene->camera.followSpeed.y=scene->camera.followMaxSpeed;
+            }
 
-        scene->camera.offset.x+=scene->camera.followSpeed.x*dirX;
-        scene->camera.offset.y+=scene->camera.followSpeed.y*dirY;
+            scene->camera.offset.x+=scene->camera.followSpeed.x*dirX;
+            scene->camera.offset.y+=scene->camera.followSpeed.y*dirY;
+        }
     }
 
     // CAMERA OFFSET LIMIT
@@ -323,6 +325,12 @@ void render(CAEngine* engine){
     LinkedItem* item=scene->objects->first;
     while (item!=NULL){
         GameObject* obj=item->data;
+
+        if (!obj->visible){
+            item=item->next;
+            continue;    
+        }
+
         float x=obj->position.x;
         float y=obj->position.y;
         // PHYSICS PROCESS
@@ -380,13 +388,35 @@ void render(CAEngine* engine){
             LinkedItem* item2 = scene->objects->first;
             while (item2!=NULL){
                 GameObject* obj2 = item2->data;
+                if (!obj2->visible){
+                    item2=item2->next;
+                    continue;
+                }
                 if (obj2->collisionEnabled && obj2!=obj){
                     switch(obj->collisionType){
                         case COLLISION_RECT:
-                            hasCollision=checkCollisionRect(x+obj->startCollisionOffset.x, y+obj->startCollisionOffset.y, obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, obj2->position.x+obj2->startCollisionOffset.x, obj2->position.y+obj2->startCollisionOffset.y, obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y);
+                            hasCollision=checkCollisionRect(
+                                x+obj->startCollisionOffset.x, 
+                                y+obj->startCollisionOffset.y, 
+                                obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
+                                obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
+                                obj2->position.x+obj2->startCollisionOffset.x, 
+                                obj2->position.y+obj2->startCollisionOffset.y, 
+                                obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
+                                obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                            );
                             break;
                         case COLLISION_CIRCLE:
-                            hasCollision=checkCollisionCircle(x+obj->startCollisionOffset.x, y+obj->startCollisionOffset.y, obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, obj2->position.x+obj2->startCollisionOffset.x, obj2->position.y+obj2->startCollisionOffset.y, obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y);
+                            hasCollision=checkCollisionCircle(
+                                x+obj->startCollisionOffset.x, 
+                                y+obj->startCollisionOffset.y, 
+                                obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
+                                obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
+                                obj2->position.x+obj2->startCollisionOffset.x, 
+                                obj2->position.y+obj2->startCollisionOffset.y, 
+                                obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
+                                obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                            );
                             break;
                         default:
                             break;
@@ -709,6 +739,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->onCollision=NULL;
     newObj->startCollisionOffset.x=newObj->startCollisionOffset.y=0;
     newObj->endCollisionOffset.x=newObj->endCollisionOffset.y=0;
+    newObj->visible=1;
 
     addGameObjectToScene(scene, newObj);
 
