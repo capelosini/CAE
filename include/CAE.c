@@ -383,10 +383,10 @@ void render(CAEngine* engine){
                 if (obj2->collisionEnabled && obj2!=obj){
                     switch(obj->collisionType){
                         case COLLISION_RECT:
-                            hasCollision=checkCollisionRect(x, y, obj->width, obj->height, obj2->position.x, obj2->position.y, obj2->width, obj2->height);
+                            hasCollision=checkCollisionRect(x+obj->startCollisionOffset.x, y+obj->startCollisionOffset.y, obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, obj2->position.x+obj2->startCollisionOffset.x, obj2->position.y+obj2->startCollisionOffset.y, obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y);
                             break;
                         case COLLISION_CIRCLE:
-                            hasCollision=checkCollisionCircle(x, y, obj->width, obj->height, obj2->position.x, obj2->position.y, obj2->width, obj2->height);
+                            hasCollision=checkCollisionCircle(x+obj->startCollisionOffset.x, y+obj->startCollisionOffset.y, obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, obj2->position.x+obj2->startCollisionOffset.x, obj2->position.y+obj2->startCollisionOffset.y, obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y);
                             break;
                         default:
                             break;
@@ -707,6 +707,8 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->collisionEnabled=0;
     newObj->collisionType=COLLISION_RECT;
     newObj->onCollision=NULL;
+    newObj->startCollisionOffset.x=newObj->startCollisionOffset.y=0;
+    newObj->endCollisionOffset.x=newObj->endCollisionOffset.y=0;
 
     addGameObjectToScene(scene, newObj);
 

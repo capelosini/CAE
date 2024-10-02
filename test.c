@@ -107,10 +107,11 @@ int main(){
     GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300, mainScene);
     
     square->collisionEnabled=1;
-    square->collisionType=COLLISION_CIRCLE;
     square2->collisionEnabled=1;
     square3->collisionEnabled=1;
-    square3->collisionType=COLLISION_CIRCLE;
+    square3->startCollisionOffset.y=100;
+    square3->startCollisionOffset.x=50;
+    square3->endCollisionOffset.x=-50;
     
     setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
     setGameObjectBitmap(square3, loadBitmap(engine, "./images/demoTree.png"));

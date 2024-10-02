@@ -80,6 +80,8 @@ struct GameObject{
     unsigned char collisionEnabled;
     enum COLLISION_TYPE collisionType;
     void (*onCollision)(GameObject*, GameObject*);
+    Vector2 startCollisionOffset;
+    Vector2 endCollisionOffset;
 };
 
 typedef struct LinkedItem LinkedItem;
