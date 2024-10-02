@@ -395,28 +395,55 @@ void render(CAEngine* engine){
                 if (obj2->collisionEnabled && obj2!=obj){
                     switch(obj->collisionType){
                         case COLLISION_RECT:
-                            hasCollision=checkCollisionRect(
-                                x+obj->startCollisionOffset.x, 
-                                y+obj->startCollisionOffset.y, 
-                                obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
-                                obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
-                                obj2->position.x+obj2->startCollisionOffset.x, 
-                                obj2->position.y+obj2->startCollisionOffset.y, 
-                                obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
-                                obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
-                            );
+                            if (!obj2->invertedCollision){
+                                hasCollision=checkCollisionRect(
+                                    x+obj->startCollisionOffset.x, 
+                                    y+obj->startCollisionOffset.y, 
+                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
+                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
+                                    obj2->position.x+obj2->startCollisionOffset.x, 
+                                    obj2->position.y+obj2->startCollisionOffset.y, 
+                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
+                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                );
+                            } else {
+                                hasCollision=checkCollisionInvertedRect(
+                                    x+obj->startCollisionOffset.x, 
+                                    y+obj->startCollisionOffset.y, 
+                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
+                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
+                                    obj2->position.x+obj2->startCollisionOffset.x, 
+                                    obj2->position.y+obj2->startCollisionOffset.y, 
+                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
+                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                );
+                                printf("\n%d", hasCollision);
+                            }
                             break;
                         case COLLISION_CIRCLE:
-                            hasCollision=checkCollisionCircle(
-                                x+obj->startCollisionOffset.x, 
-                                y+obj->startCollisionOffset.y, 
-                                obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
-                                obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
-                                obj2->position.x+obj2->startCollisionOffset.x, 
-                                obj2->position.y+obj2->startCollisionOffset.y, 
-                                obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
-                                obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
-                            );
+                            if (!obj2->invertedCollision){
+                                hasCollision=checkCollisionCircle(
+                                    x+obj->startCollisionOffset.x, 
+                                    y+obj->startCollisionOffset.y, 
+                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
+                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
+                                    obj2->position.x+obj2->startCollisionOffset.x, 
+                                    obj2->position.y+obj2->startCollisionOffset.y, 
+                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
+                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                );
+                            } else {
+                                hasCollision=checkCollisionInvertedCircle(
+                                    x+obj->startCollisionOffset.x, 
+                                    y+obj->startCollisionOffset.y, 
+                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x, 
+                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y, 
+                                    obj2->position.x+obj2->startCollisionOffset.x, 
+                                    obj2->position.y+obj2->startCollisionOffset.y, 
+                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
+                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                );
+                            }
                             break;
                         default:
                             break;
@@ -739,6 +766,7 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->onCollision=NULL;
     newObj->startCollisionOffset.x=newObj->startCollisionOffset.y=0;
     newObj->endCollisionOffset.x=newObj->endCollisionOffset.y=0;
+    newObj->invertedCollision=0;
     newObj->visible=1;
 
     addGameObjectToScene(scene, newObj);
@@ -807,8 +835,19 @@ char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, floa
     return 0;
 }
 
+char checkCollisionInvertedCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
+    int d = (int)dist(x1, y1, w1, h1, x2, y2, w2, h2);
+    if((d<=(w1/2+w2/2))||(d<=(h1/2+h2/2)))
+        return 0;
+    return 1;
+}
+
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
     return x1+w1 > x2 && x1 < x2+w2 && y1+h1 > y2 && y1 < y2+h2;
+}
+
+char checkCollisionInvertedRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2){
+    return x1 <= x2 || x1+w1 >= x2 + w2 || y1 <= y2 || y1+h1 >= y2 + h2;
 }
 
 void changeScene(CAEngine* engine, Scene* scene){

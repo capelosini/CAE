@@ -108,7 +108,12 @@ int main(){
     square2 = createGameObject(SOLID, 300, 300, 50, 50, mainScene);
     GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150, mainScene);
     GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300, mainScene);
-    
+
+    GameObject* map = createGameObject(SOLID, 0, 0, 800, 800, mainScene);
+    map->color=al_map_rgba(0, 0, 0, 0);
+    map->collisionEnabled=1;
+    map->invertedCollision=1;
+
     square->collisionEnabled=1;
     square2->collisionEnabled=1;
     square3->collisionEnabled=1;

@@ -82,6 +82,7 @@ struct GameObject{
     void (*onCollision)(GameObject*, GameObject*);
     Vector2 startCollisionOffset;
     Vector2 endCollisionOffset;
+    unsigned char invertedCollision;
     unsigned char visible;
 };
 
@@ -260,7 +261,9 @@ void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWi
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
 float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+char checkCollisionInvertedCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+char checkCollisionInvertedRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
 void changeScene(CAEngine* engine, Scene* scene);
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
 Font* loadTTF(CAEngine* engine, const char* path, int size);
