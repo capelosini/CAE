@@ -79,6 +79,8 @@ CAEngine* initEngine(GameConfig config){
     assertInit(al_install_audio(), "Audio");
     assertInit(al_init_acodec_addon(), "Audio Codecs");
     assertInit(al_reserve_samples(CAE_RESERVE_SAMPLES), "Audio Samples");
+    assertInit(al_init_video_addon(), "Video");
+
     CAEngine* engine = (CAEngine*)malloc(sizeof(CAEngine));
     if (config.fullscreen){
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
@@ -97,6 +99,7 @@ CAEngine* initEngine(GameConfig config){
     al_set_window_title(engine->display, config.title);
     engine->ev_queue = al_create_event_queue();
     engine->timer = al_create_timer(1.0 / config.fps);
+    engine->fps=config.fps;
     engine->isAlive = 1;
     engine->bitmaps = createLinkedList(LLFFDestroyBitmaps);
     engine->scenes = createLinkedList(LLFFFreeScenes);
@@ -138,6 +141,7 @@ void freeEngine(CAEngine* engine){
     al_shutdown_image_addon();
     al_shutdown_ttf_addon();
     al_uninstall_audio();
+    al_shutdown_video_addon();
 }
 
 void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source){
@@ -242,6 +246,13 @@ void render(CAEngine* engine){
 
     if (scene == NULL || !drawTime)
         return;
+
+    // FADE EFFECT
+    if (scene->fadeIn.value < 0){
+        scene->fadeIn.value=0;
+    } else{
+        scene->fadeIn.value-=255/engine->fps*scene->fadeIn.speed;
+    }
 
     al_clear_to_color(scene->backgroundColor);
 
@@ -417,7 +428,6 @@ void render(CAEngine* engine){
                                     obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x, 
                                     obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
                                 );
-                                printf("\n%d", hasCollision);
                             }
                             break;
                         case COLLISION_CIRCLE:
@@ -536,6 +546,10 @@ void render(CAEngine* engine){
             item=item->next;
         }
     }
+    
+    // FADE EFFECT
+    if (scene->fadeIn.speed > 0 && (int)scene->fadeIn.value > 0)
+        al_draw_filled_rectangle(0, 0, engine->displayWidth, engine->displayHeight, al_map_rgba(0, 0, 0, (int)scene->fadeIn.value));
 
     al_flip_display();
 }
@@ -705,7 +719,9 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->ui.progressBars=createLinkedList(NULL);
     scene->ui.visible=1;
     scene->world=NULL;
-
+    scene->fadeIn.speed=1;
+    scene->fadeIn.value=0;
+    
     addItemToLinkedList(engine->scenes, scene);
     return scene;
 }
@@ -851,6 +867,7 @@ char checkCollisionInvertedRect(float x1, float y1, float w1, float h1, float x2
 }
 
 void changeScene(CAEngine* engine, Scene* scene){
+    scene->fadeIn.value=255;
     engine->currentScene=scene;
 }
 
@@ -940,3 +957,18 @@ void changeText(Text* text, const char* newText){
 int randInt(int min, int max){
     return rand() % (max-min+1) + min;
 }
+
+// void playSplashScreen(CAEngine* engine){
+//     ALLEGRO_VIDEO* splash = al_open_video("./splash.mp4");
+//     if (!splash){
+//         printf("\nFailed to load splash video");
+//         return;
+//     }
+//     al_start_video(splash, al_get_default_mixer());
+//     while(al_is_video_playing(splash)){
+//         ALLEGRO_BITMAP* frame = al_get_video_frame(splash);
+//         al_draw_scaled_bitmap(frame, 0, 0, al_get_bitmap_width(frame), al_get_bitmap_height(frame), 0, 0, engine->displayWidth, engine->displayHeight, 0);
+//         al_flip_display();
+//     }
+//     al_close_video(splash);
+// }

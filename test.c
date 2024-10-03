@@ -161,6 +161,8 @@ int main(){
     playerLifeBar = createProgressBar(engine->displayWidth-400, 50, 200, 20, 100, al_map_rgba(10,10,20,100), al_map_rgba(255,10,10,255));
     addProgressBarToScene(mainScene, playerLifeBar);
 
+    mainScene->fadeIn.speed=2;
+
     while (engine->isAlive){
         render(engine);
     }

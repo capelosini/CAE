@@ -13,6 +13,7 @@
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include <allegro5/allegro_video.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -142,6 +143,12 @@ struct World{
     LinkedList* tiles;
 };
 
+typedef struct FadeEffect FadeEffect;
+struct FadeEffect{
+    float value;
+    float speed;
+};
+
 typedef struct Scene Scene;
 struct Scene{
     GameCamera camera;
@@ -151,6 +158,7 @@ struct Scene{
     ALLEGRO_COLOR backgroundColor;
     UI ui;
     World* world;
+    FadeEffect fadeIn;
 };
 
 typedef struct Font Font;
@@ -201,6 +209,7 @@ struct CAEngine{
     ALLEGRO_TIMER *timer;
     int displayWidth;
     int displayHeight;
+    float fps;
     void (*eventFunction)(ALLEGRO_EVENT, Scene*, CAEngine*);
     LinkedList* bitmaps;
     LinkedList* scenes;
@@ -275,5 +284,6 @@ ProgressBar* createProgressBar(float x, float y, int width, int height, float in
 void addProgressBarToScene(Scene* scene, ProgressBar* bar);
 void changeText(Text* text, const char* newText);
 int randInt(int min, int max);
+// void playSplashScreen(CAEngine* engine);
 
 #endif
