@@ -34,7 +34,6 @@ void mainSceneScript(Scene* self){
     char down = al_key_down(&keyState, ALLEGRO_KEY_S);
     char left = al_key_down(&keyState, ALLEGRO_KEY_A);
     char right = al_key_down(&keyState, ALLEGRO_KEY_D);
-
     if (up && !down){
         square->physics.directions.y=-1;
         square->physics.acc.y=1;

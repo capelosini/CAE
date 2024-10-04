@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "b64/b64.h"
 
 enum OBJECT_TYPE {
     SOLID,
@@ -284,6 +285,8 @@ ProgressBar* createProgressBar(float x, float y, int width, int height, float in
 void addProgressBarToScene(Scene* scene, ProgressBar* bar);
 void changeText(Text* text, const char* newText);
 int randInt(int min, int max);
-// void playSplashScreen(CAEngine* engine);
+void createTempFile(const char* b64Content, char* resultPath);
+void closeTempFile(char* path);
+void playSplashScreen(CAEngine* engine);
 
 #endif
