@@ -161,6 +161,7 @@ struct Scene{
     UI ui;
     World* world;
     FadeEffect fadeIn;
+    LinkedList* triggers;
 };
 
 typedef struct Font Font;

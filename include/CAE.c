@@ -210,35 +210,40 @@ void render(CAEngine* engine){
     do {
         ALLEGRO_EVENT ev;
         al_wait_for_event(engine->ev_queue, &ev);
-        if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
-            engine->isAlive=0;
-            return;
-        }
-        else if (ev.type == ALLEGRO_EVENT_TIMER) {
-            if (ev.timer.source == engine->timer)
-                drawTime = 1;
-        }
-        else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && scene != NULL) {
-            if (scene->ui.visible){
-                ALLEGRO_MOUSE_STATE state;
-                al_get_mouse_state(&state);
-                if (al_mouse_button_down(&state, 1)){
-                    LinkedItem* item = scene->ui.buttons->first;
-                    while(item != NULL){
-                        Button* btn = (Button*)item->data;
-                        if (!btn->visible){
+        switch (ev.type) {
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:
+                engine->isAlive = 0;
+                return;
+            case ALLEGRO_EVENT_TIMER:
+                if (ev.timer.source == engine->timer)
+                    drawTime = 1;
+                break;
+            case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+                if (!scene)
+                    break;
+                if (scene->ui.visible) {
+                    ALLEGRO_MOUSE_STATE state;
+                    al_get_mouse_state(&state);
+                    if (al_mouse_button_down(&state, 1)) {
+                        LinkedItem* item = scene->ui.buttons->first;
+                        while (item != NULL) {
+                            Button* btn = (Button*)item->data;
+                            if (!btn->visible) {
+                                item = item->next;
+                                continue;
+                            }
+                            if (ev.mouse.x >= btn->position.x && ev.mouse.x <= btn->position.x + btn->width && ev.mouse.y >= btn->position.y && ev.mouse.y <= btn->position.y + btn->height) {
+                                if (btn->onClick != NULL)
+                                    btn->onClick(scene);
+                                break;
+                            }
                             item = item->next;
-                            continue;
                         }
-                        if (ev.mouse.x >= btn->position.x && ev.mouse.x <= btn->position.x+btn->width && ev.mouse.y >= btn->position.y && ev.mouse.y <= btn->position.y+btn->height){
-                            if (btn->onClick != NULL)
-                                btn->onClick(scene);
-                            break;
-                        }
-                        item = item->next;
                     }
                 }
-            }
+                break;
+            default:
+                break;
         }
 
         if (scene != NULL && engine->eventFunction != NULL)
@@ -723,6 +728,7 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->world=NULL;
     scene->fadeIn.speed=1;
     scene->fadeIn.value=0;
+    scene->triggers = createLinkedList(NULL);
 
     addItemToLinkedList(engine->scenes, scene);
     return scene;
@@ -733,6 +739,7 @@ void freeScene(Scene* scene){
     freeLinkedList(scene->ui.buttons);
     freeLinkedList(scene->ui.texts);
     freeLinkedList(scene->ui.progressBars);
+    freeLinkedList(scene->triggers);
     if (scene->world != NULL){
         freeLinkedList(scene->world->tiles);
         free(scene->world);
@@ -965,7 +972,6 @@ void createTempFile(char* b64Content, char* resultPath){
     mktemp(resultPath);
     size_t sizeDecoded;
     char* decoded = b64_decode_ex(b64Content, strlen(b64Content), &sizeDecoded);
-    printf("\n%s %d", decoded, sizeDecoded);
     FILE* fd = fopen(resultPath, "wb");
     fwrite(decoded, sizeDecoded, 1, fd);
     free(decoded);
@@ -996,6 +1002,7 @@ void playSplashScreen(CAEngine* engine){
         }
         al_rest(1.0 / 60);
     }
+    al_flush_event_queue(engine->ev_queue);
     al_close_video(splash);
     closeTempFile(path);
 }

@@ -11,18 +11,18 @@ ALLEGRO_SAMPLE* sfx;
 ProgressBar* playerLifeBar;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
-    if (ev.type == ALLEGRO_EVENT_KEY_DOWN){
-        switch (ev.keyboard.keycode){
+    if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+        switch (ev.keyboard.keycode) {
             case ALLEGRO_KEY_ESCAPE:
-                engine->isAlive=0;
+                engine->isAlive = 0;
                 break;
             case ALLEGRO_KEY_SPACE:
-                square2->visible=!square2->visible;
+                square2->visible = !square2->visible;
                 break;
             default:
                 break;
         }
-    } 
+    }
 }
 
 void mainSceneScript(Scene* self){
