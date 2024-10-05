@@ -1,6 +1,7 @@
 #ifndef CAE_ENGINE_INIT
 #define CAE_ENGINE_INIT
 #define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
 #define CAE_DEBUG 1
 #define CAE_RESERVE_SAMPLES 18
 
@@ -288,5 +289,6 @@ int randInt(int min, int max);
 void createTempFile(const char* b64Content, char* resultPath);
 void closeTempFile(char* path);
 void playSplashScreen(CAEngine* engine);
+char* getCAESplash();
 
 #endif
