@@ -967,23 +967,24 @@ int randInt(int min, int max){
     return rand() % (max-min+1) + min;
 }
 
-void createTempFile(char* b64Content, char* resultPath){
-    strcpy(resultPath, "tfXXXXXX");
-    mktemp(resultPath);
+void createTempFile(const char* b64Content, char* resultPath){
+    ALLEGRO_PATH* tmpPath;
+    ALLEGRO_FILE* fd = al_make_temp_file("tfXXXXXX", &tmpPath);
+    strcpy(resultPath, al_path_cstr(tmpPath, '/'));
     size_t sizeDecoded;
     char* decoded = b64_decode_ex(b64Content, strlen(b64Content), &sizeDecoded);
-    FILE* fd = fopen(resultPath, "wb");
-    fwrite(decoded, sizeDecoded, 1, fd);
+    al_fwrite(fd, decoded, sizeDecoded);
     free(decoded);
-    fclose(fd);
+    al_fclose(fd);
+    al_destroy_path(tmpPath);
 }
 
-void closeTempFile(char* path){
-    unlink(path);
+void closeTempFile(const char* path){
+    al_remove_filename(path);
 }
 
 void playSplashScreen(CAEngine* engine){
-    char path[9];
+    char path[70];
     char* file=getCAESplash();
     createTempFile(file, path);
     free(file);

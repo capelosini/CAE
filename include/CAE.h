@@ -288,7 +288,7 @@ void addProgressBarToScene(Scene* scene, ProgressBar* bar);
 void changeText(Text* text, const char* newText);
 int randInt(int min, int max);
 void createTempFile(const char* b64Content, char* resultPath);
-void closeTempFile(char* path);
+void closeTempFile(const char* path);
 void playSplashScreen(CAEngine* engine);
 char* getCAESplash();
 
