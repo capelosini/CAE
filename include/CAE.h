@@ -103,13 +103,6 @@ struct LinkedList{
     void (*onDestroy)(LinkedItem* item);
 };
 
-// typedef struct GameObjectList GameObjectList;
-// struct GameObjectList{
-//     GameObject* first;
-//     GameObject* last;
-//     int length;
-// };
-
 typedef struct GameCamera GameCamera;
 struct GameCamera{
     Vector2 offset;
@@ -225,6 +218,7 @@ struct CAEngine{
     time_t startTime;
 };
 
+// LLFF FUNCTIONS ARE USED TO CUSTOMIZE THE FREE LINKED LIST FUNCTION
 void LLFFFreeButtons(LinkedItem* item);
 void LLFFFreeTexts(LinkedItem* item);
 void LLFFDestroyBitmaps(LinkedItem* item);
@@ -233,64 +227,123 @@ void LLFFFreeScenes(LinkedItem* item);
 void LLFFDestroyAudioSamples(LinkedItem* item);
 void LLFFDestroyAudioStreams(LinkedItem* item);
 void LLFFDestroyAudioMixers(LinkedItem* item);
+// ASSERT IF THE MODULE OF ALLEGRO IS OK
 void assertInit(char result, const char* module);
+// INITIALIZE THE ENGINE AND RETURNS THE `CAEngine*`
 CAEngine* initEngine(GameConfig config);
+// FREE THE `CAEngine*` AND ITS RESOURCES
 void freeEngine(CAEngine* engine);
+// ADD ALLEGRO EVENT SOURCE TO THE MAIN EVENT QUEUE OF THE ENGINE
 void addEventSource(CAEngine* engine, ALLEGRO_EVENT_SOURCE* ev_source);
+// SET THE EVENT FUNCTION TO THE ENGINE, THIS WILL RUN EVERY RENDER CALL, LIKE A CALLBACK FOR EVERY EVENT
 void setEventFunction(CAEngine* engine, void (*f)(ALLEGRO_EVENT, Scene*, CAEngine*));
+// FUNCTION THAT DRAWS A BUTTON
 void renderButton(Button* button);
+// FUNCTION THAT DRAWS A TEXT
 void renderText(Text* text);
+// FUNCTION THAT DRAWS A PROGRESS BAR
 void renderProgressBar(ProgressBar* bar);
+// THIS FUNCTION MAKES THE MAGIC OF TRANSFORMING THE X AND Y OF AN GAME OBJECT INTO A SCREEN X AND Y, MAINLY USED BY THE CAMERA FOR TAKING THE GIANT NUMBERS POSITIONS AND TURNING INTO SCREEN POSITIONS RELATIVE TO THE CAMERA OFFSET
 void globalToLocal(Scene* scene, float* x, float* y);
+// FUNCTION THAT MAKES MAGIC, PROCESSING ALL THE PHYSICS AND OTHER COOL STUFF AND FINALLY DRAWING ALL THAT IN THE DISPLAY, IMAGINE BEEING CALLED TO DRAW EVERY FRAME
 void render(CAEngine* engine);
+// CREATE A LINKED LIST STRUCTURE AND RETURNS THE `LinkedList*`
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
+// FREE A UNIQUE LINKED LIST ITEM
 void freeLinkedItem(LinkedItem* item);
+// A RECURIVE WAY TO FREE A LINKED LIST THAT IS CALLED BY THE FUNCTION `freeLinkedList(LinkedList* list)`, THIS FUNCTION ALSO CALLS THE LLFF type of function
 void freeLinkedListItems(LinkedItem* item, LinkedList* list);
+// THE FINAL FUNCTION TO FREE A LINKED LIST, THIS FUNCTION IS THE FUNCTION YOU NEED TO CALL TO FREE A LINKED LIST
 void freeLinkedList(LinkedList* list);
+// ADD AN ITEM TO A LINKED LIST
 void addItemToLinkedList(LinkedList* list, void* data);
+// REMOVE AN ITEM FROM A LINKED LIST
 void removeItemLinkedList(LinkedList* list, void* searchData);
+// MORE A DEBUG THING, BUT IF YOU WANT TO PRINT LIKE HOW IS THE ACTUAL STRUCT OF A LINKED LIST, CALL THIS
 void printList(LinkedList* list);
+// LOADS AN AUDIO SAMPLE AND RETURNS THE `ALLEGRO_SAMPLE*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 ALLEGRO_SAMPLE* loadAudioSample(CAEngine* engine, const char* path);
+// LOADS AN AUDIO STREAM AND RETURNS THE `ALLEGRO_AUDIO_STREAM*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 ALLEGRO_AUDIO_STREAM* loadAudioStream(CAEngine* engine, const char* path, int buffers, int samples);
+// PLAYS THE AUDIO SAMPLE AND RETURN ITS ID
 ALLEGRO_SAMPLE_ID playAudioSample(ALLEGRO_SAMPLE* sample, float gain, float pan, float speed, ALLEGRO_PLAYMODE playMode);
+// STOPS THE AUDIO SAMPLE BY THE ID
 void stopAudioSample(ALLEGRO_SAMPLE_ID* sampleId);
+// CONFIG OF AN AUDIO STREAM
 void configureAudioStream(ALLEGRO_AUDIO_STREAM* stream, float gain, float pan, float speed, ALLEGRO_PLAYMODE playMode);
+// PLAYS AND AUDIO STREAM
 void playAudioStream(ALLEGRO_AUDIO_STREAM* stream);
+// PAUSES AN AUDIO STREAM
 void pauseAudioStream(ALLEGRO_AUDIO_STREAM* stream);
+// STOPS AN AUDIO STREAM
 void stopAudioStream(ALLEGRO_AUDIO_STREAM* stream);
+// CREATES AN ALLEGRO AUDIO MIXER AND RETURNS THE `ALLEGRO_MIXER*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 ALLEGRO_MIXER* createAudioMixer(CAEngine* engine, unsigned int sampleRate);
+// CONFIG OF AN AUDIO MIXER
 void configureAudioMixer(ALLEGRO_MIXER* mixer, float gain);
+// ADD AN AUDIO STREAM TO AN AUDIO MIXER
 void addAudioStreamToMixer(ALLEGRO_MIXER* mixer, ALLEGRO_AUDIO_STREAM* stream);
+// CREATE A SCENE, THINK A SCENE LIKE A LEVEL OR PART OF YOU GAME, RETURNS A `Scene*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*));
+// FREE A SCENE AND ITS RESOURCES, DON'T NEED TO CALL THIS FUNCTION BECAUSE THE ENGINE DOES IT WHEN FREE ENGINE
 void freeScene(Scene* scene);
+// SETUP THE WORLD OF THE SCENE, THINK LIKE A BACKGROUND IMAGE AND/OR THE GAME MAP
 void setupSceneWorld(Scene* scene, ALLEGRO_BITMAP* tileSheet, int tileWidth, int tileHeight);
+// ADD A TILE TO THE WORLD OF THE SCENE
 void addWorldTile(Scene* scene, int idX, int idY, int tileX, int tileY);
+// CREATES A GAME OBJECT AND RETURNS THE `GameObject*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width, int height, Scene* scene);
+// ADDS A CALLBACK FUNCTION TO A GAME OBJECT, WHEN THIS OBJECT COLLIDE WITH ANOTHER OBJECT, THE FUNCTION WILL BE CALLED
 void setOnGameObjectCollisionFunction(GameObject* obj, void (*onCollision)(GameObject*, GameObject*));
+// ADD A GAME OBJECT TO A SCENE
 void addGameObjectToScene(Scene* scene, GameObject* obj);
+// LOADS A BITMAP AND RETURNS THE `ALLEGRO_BITMAP*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, const char* pathToBitmap);
+// CREATES A SUB BITMAP FROM A BITMAP, THIS IS USED TO VARIANTS OF THE ORIGINAL BITMAP, LIKE A SPRITE INSIDE A SPRITESHEET, ALSO PUTS IN FREES LIST OF THE ENGINE
 ALLEGRO_BITMAP* createSubBitmap(CAEngine* engine, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh);
+// CONFIG THE ANIMATION OF THE GAME OBJECT
 void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWidth, int frameHeight, int totalFrames, float fps);
+// IF YOU WANT TO INTERPRET A COLOR INSIDE THIS BITMAP AS TRANSPARENT, YOU CAN USE THIS FUNCTION
 void setBitmapTransparentColor(ALLEGRO_BITMAP* bm, ALLEGRO_COLOR color);
+// CALCULATES THE DISTANCE BETWEEN TWO GAME OBJECTS USING HYPOT
 float dist(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+// CHECKS THE COLLISION OF TWO OBJECTS USING THE `dist` FUNCTION
 char checkCollisionCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+// CHECKS THE COLLISION OF TWO OBJECTS USING THE `dist` FUNCTION, BUT INVERTED LIKE !RESPONSE
 char checkCollisionInvertedCircle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+// CHECKS THE COLLISION OF TWO OBJECTS USING COMPARISON OPERATORS
 char checkCollisionRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+// CHECKS THE COLLISION OF TWO OBJECTS USING COMPARISON OPERATORS, BUT INVERTED LIKE !RESPONSE
 char checkCollisionInvertedRect(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2);
+// CHANGE THE CURRENT RENDERING SCENE TO THE TARGET ONE
 void changeScene(CAEngine* engine, Scene* scene);
+// SETS THE GAME OBJECTS BITMAP
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
+// LOADS A TTF FONT AND RETURNS THE `Font*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 Font* loadTTF(CAEngine* engine, const char* path, int size);
+// CREATES A TEXT AND RETURNS THE `Text*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
+// ADDS A TEXT TO A SCENE IN UI
 void addTextToScene(Scene* scene, Text* text);
+// CREATES A BUTTON AND RETURNS THE `Button*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
+// ADDS A BUTTON TO A SCENE IN UI
 void addButtonToScene(Scene* scene, Button* button);
+// CREATES A PROGRESS BAR AND RETURNS THE `ProgressBar*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 ProgressBar* createProgressBar(float x, float y, int width, int height, float initValue, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor);
+// ADDS A PROGRESS BAR TO A SCENE IN UI
 void addProgressBarToScene(Scene* scene, ProgressBar* bar);
+// CHANGES THE TEXT OF A TEXT ELEMENT IN A SCENE
 void changeText(Text* text, const char* newText);
+// RANDOM INTEGER BETWEEN MIN AND MAX, INCLUDING BOTH
 int randInt(int min, int max);
+// CREATE A TEMP FILE AND RETURNS THE PATH OF THE FILE
 void createTempFile(const char* b64Content, char* resultPath);
+// CLOSE/DELETE THE TEMP FILE
 void closeTempFile(const char* path);
+// PLAY THE SPLASH SCREEN OF THE ENGINE
 void playSplashScreen(CAEngine* engine);
+// GET THE SPLASH SCREEN BASE64 CONTENT
 char* getCAESplash();
 
 #endif
