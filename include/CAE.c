@@ -268,12 +268,12 @@ void render(CAEngine* engine){
         LinkedItem* item = scene->world->tiles->first;
         while (item != NULL){
             Tile* tile = (Tile*)item->data;
-            float x = tile->x*scene->world->tileWidth;
-            float y = tile->y*scene->world->tileHeight;
+            float x = tile->x*scene->world->tileWidth*scene->camera.zoom;
+            float y = tile->y*scene->world->tileHeight*scene->camera.zoom;
             // NOT DRAW IF NOT VISIBLE IN CAMERA
-            if ((x+scene->world->tileWidth > scene->camera.offset.x && x < scene->camera.offset.x+engine->displayWidth) && (y+scene->world->tileHeight > scene->camera.offset.y && y < scene->camera.offset.y+engine->displayHeight)){
+            if ((x+scene->world->tileWidth*scene->camera.zoom > scene->camera.offset.x && x < scene->camera.offset.x+engine->displayWidth) && (y+scene->world->tileHeight*scene->camera.zoom > scene->camera.offset.y && y < scene->camera.offset.y+engine->displayHeight)){
                 globalToLocal(scene, &x, &y);
-                al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, scene->world->tileWidth, scene->world->tileHeight, 0);
+                al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, scene->world->tileWidth*scene->camera.zoom, scene->world->tileHeight*scene->camera.zoom, 0);
             }
             item = item->next;
         }
@@ -290,8 +290,8 @@ void render(CAEngine* engine){
             char dirY=0;
             int viewX=scene->camera.offset.x+engine->displayWidth/2;
             int viewY=scene->camera.offset.y+engine->displayHeight/2;
-            int targetX=scene->camera.followTarget->position.x+scene->camera.followTarget->width/2;
-            int targetY=scene->camera.followTarget->position.y+scene->camera.followTarget->height/2;
+            int targetX=scene->camera.followTarget->position.x*scene->camera.zoom+scene->camera.followTarget->width*scene->camera.zoom/2;
+            int targetY=scene->camera.followTarget->position.y*scene->camera.zoom+scene->camera.followTarget->height*scene->camera.zoom/2;
             int difX=abs(targetX-viewX);
             int difY=abs(targetY-viewY);
 
@@ -351,6 +351,11 @@ void render(CAEngine* engine){
 
         float x=obj->position.x;
         float y=obj->position.y;
+
+        // ADAPT X AND Y TO THE CAMERA ZOOM FACTOR
+        x=x*scene->camera.zoom;
+        y=y*scene->camera.zoom;
+
         // PHYSICS PROCESS
         if (obj->physics.enabled){
             // SPEED BY ACCELERATION X
@@ -411,29 +416,31 @@ void render(CAEngine* engine){
                     continue;
                 }
                 if (obj2->collisionEnabled && obj2!=obj){
+                    float x2=obj2->position.x*scene->camera.zoom;
+                    float y2=obj2->position.y*scene->camera.zoom;
                     switch(obj->collisionType){
                         case COLLISION_RECT:
                             if (!obj2->invertedCollision){
                                 hasCollision=checkCollisionRect(
                                     x+obj->startCollisionOffset.x,
                                     y+obj->startCollisionOffset.y,
-                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x,
-                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y,
-                                    obj2->position.x+obj2->startCollisionOffset.x,
-                                    obj2->position.y+obj2->startCollisionOffset.y,
-                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x,
-                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
+                                    x2+obj2->startCollisionOffset.x,
+                                    y2+obj2->startCollisionOffset.y,
+                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
                                 );
                             } else {
                                 hasCollision=checkCollisionInvertedRect(
                                     x+obj->startCollisionOffset.x,
                                     y+obj->startCollisionOffset.y,
-                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x,
-                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y,
-                                    obj2->position.x+obj2->startCollisionOffset.x,
-                                    obj2->position.y+obj2->startCollisionOffset.y,
-                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x,
-                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
+                                    x2+obj2->startCollisionOffset.x,
+                                    y2+obj2->startCollisionOffset.y,
+                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
                                 );
                             }
                             break;
@@ -442,23 +449,23 @@ void render(CAEngine* engine){
                                 hasCollision=checkCollisionCircle(
                                     x+obj->startCollisionOffset.x,
                                     y+obj->startCollisionOffset.y,
-                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x,
-                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y,
-                                    obj2->position.x+obj2->startCollisionOffset.x,
-                                    obj2->position.y+obj2->startCollisionOffset.y,
-                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x,
-                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
+                                    x2+obj2->startCollisionOffset.x,
+                                    y2+obj2->startCollisionOffset.y,
+                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
                                 );
                             } else {
                                 hasCollision=checkCollisionInvertedCircle(
                                     x+obj->startCollisionOffset.x,
                                     y+obj->startCollisionOffset.y,
-                                    obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x,
-                                    obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y,
-                                    obj2->position.x+obj2->startCollisionOffset.x,
-                                    obj2->position.y+obj2->startCollisionOffset.y,
-                                    obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x,
-                                    obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y
+                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
+                                    x2+obj2->startCollisionOffset.x,
+                                    y2+obj2->startCollisionOffset.y,
+                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
+                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
                                 );
                             }
                             break;
@@ -476,8 +483,8 @@ void render(CAEngine* engine){
         }
 
         if (!hasCollision){
-            obj->position.x=x;
-            obj->position.y=y;
+            obj->position.x=x/scene->camera.zoom;
+            obj->position.y=y/scene->camera.zoom;
         } else if (obj->physics.enabled && obj->physics.gravity){
             y-=obj->physics.gravitySpeed+scene->gravityValue;
             obj->physics.gravitySpeed=0;
@@ -485,45 +492,31 @@ void render(CAEngine* engine){
         }
 
         // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!((obj->position.x+obj->width > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+engine->displayWidth) && (obj->position.y+obj->height > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+engine->displayHeight))){
+        if (!((obj->position.x*scene->camera.zoom+obj->width*scene->camera.zoom > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+engine->displayWidth/scene->camera.zoom) && (obj->position.y*scene->camera.zoom+obj->height*scene->camera.zoom > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+engine->displayHeight/scene->camera.zoom))){
             item=item->next;
+            printf("\n%f not visible!", obj->position.x);
             continue;
         }
-
-        // TRANSFORM THE GLOBAL POSITION OF EVERYTHING IN LOCAL POSITION
-        // if (x < 0 && scene->camera.offset.x < 0)
-        //     x=fabs(x) - fabs(scene->camera.offset.x);
-        // else
-        //     x-=scene->camera.offset.x;
-        // if (y < 0 && scene->camera.offset.y < 0)
-        //     y=fabs(y) - fabs(scene->camera.offset.y);
-        // else
-        //     y-=scene->camera.offset.y;
-
-        // if (x > scene->camera.offset.x)
-        //     x=fabs(x);
-        // if (y > scene->camera.offset.y)
-        //     y=fabs(y);
 
         globalToLocal(scene, &x, &y);
 
         // DRAW EACH TYPE OF GAME OBJECT
         switch (obj->type){
             case SOLID:
-                al_draw_filled_rectangle(x, y, x+obj->width, y+obj->height, obj->color);
+                al_draw_filled_rectangle(x, y, x+obj->width*scene->camera.zoom, y+obj->height*scene->camera.zoom, obj->color);
                 break;
             case SPRITE:
-                al_draw_scaled_bitmap(obj->bitmap, 0, 0, al_get_bitmap_width(obj->bitmap), al_get_bitmap_height(obj->bitmap), x, y, obj->width, obj->height, 0);
+                al_draw_scaled_bitmap(obj->bitmap, 0, 0, al_get_bitmap_width(obj->bitmap), al_get_bitmap_height(obj->bitmap), x, y, obj->width*scene->camera.zoom, obj->height*scene->camera.zoom, 0);
                 break;
             case ANIMATED_SPRITE:
                 if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
                     obj->animation.index.x=0;
                 //printf("Index: %d\n", obj->animation.width);
                 if (obj->animation.direction.x<0)
-                    x+=fabs(obj->width*obj->animation.direction.x);
+                    x+=fabs(obj->width*obj->animation.direction.x*scene->camera.zoom);
                 if (obj->animation.direction.y<0)
-                    y+=fabs(obj->height*obj->animation.direction.y);
-                al_draw_scaled_bitmap(obj->bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x, obj->height*obj->animation.direction.y, 0);
+                    y+=fabs(obj->height*obj->animation.direction.y*scene->camera.zoom);
+                al_draw_scaled_bitmap(obj->bitmap, ((int)obj->animation.index.x)*obj->animation.width, ((int)obj->animation.index.y)*obj->animation.height, obj->animation.width, obj->animation.height, x, y, obj->width*obj->animation.direction.x*scene->camera.zoom, obj->height*obj->animation.direction.y*scene->camera.zoom, 0);
                 obj->animation.index.x+=obj->animation.fps;
                 break;
             default:
@@ -718,6 +711,7 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->camera.followMaxSpeed=4;
     scene->camera.maxLimit.x=scene->camera.maxLimit.y=0;
     scene->camera.minLimit.x=scene->camera.minLimit.y=0;
+    scene->camera.zoom=1;
     scene->scriptFunction=scriptFunction;
     scene->gravityValue=0.1;
     scene->backgroundColor=al_map_rgb(30, 30, 30);

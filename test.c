@@ -18,6 +18,7 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
                 break;
             case ALLEGRO_KEY_SPACE:
                 square2->visible = !square2->visible;
+                scene->camera.zoom-=0.1;
                 break;
             default:
                 break;
@@ -108,7 +109,7 @@ int main(){
     GameObject* square3 = createGameObject(SPRITE, 20, 20, 150, 150, mainScene);
     GameObject* square4 = createGameObject(SPRITE, 0, 400, 300, 300, mainScene);
 
-    GameObject* map = createGameObject(SOLID, 0, 0, 800, 800, mainScene);
+    GameObject* map = createGameObject(SOLID, 0, 0, 2000, 2000, mainScene);
     map->color=al_map_rgba(0, 0, 0, 0);
     map->collisionEnabled=1;
     map->invertedCollision=1;

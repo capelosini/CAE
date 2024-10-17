@@ -119,6 +119,7 @@ struct GameCamera{
     float followAcc;
     Vector2 minLimit;
     Vector2 maxLimit;
+    float zoom;
 };
 
 typedef struct UI UI;
