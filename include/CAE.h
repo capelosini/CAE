@@ -345,5 +345,7 @@ void closeTempFile(const char* path);
 void playSplashScreen(CAEngine* engine);
 // GET THE SPLASH SCREEN BASE64 CONTENT
 char* getCAESplash();
+// MULTIPLY THE VECTOR2 BY A CONSTANT
+void multVector2(Vector2* vector2, float k);
 
 #endif

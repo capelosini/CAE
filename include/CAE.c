@@ -418,54 +418,66 @@ void render(CAEngine* engine){
                 if (obj2->collisionEnabled && obj2!=obj){
                     float x2=obj2->position.x*scene->camera.zoom;
                     float y2=obj2->position.y*scene->camera.zoom;
+                    Vector2 startOffset = obj->startCollisionOffset;
+                    Vector2 startOffset2 = obj2->startCollisionOffset;
+                    Vector2 endOffset = obj->endCollisionOffset;
+                    Vector2 endOffset2 = obj2->endCollisionOffset;
+                    multVector2(&startOffset, scene->camera.zoom);
+                    multVector2(&startOffset2, scene->camera.zoom);
+                    multVector2(&endOffset, scene->camera.zoom);
+                    multVector2(&endOffset2, scene->camera.zoom);
+                    float objWidth=obj->width*scene->camera.zoom;
+                    float objHeight=obj->height*scene->camera.zoom;
+                    float obj2Width=obj2->width*scene->camera.zoom;
+                    float obj2Height=obj2->height*scene->camera.zoom;
                     switch(obj->collisionType){
                         case COLLISION_RECT:
                             if (!obj2->invertedCollision){
                                 hasCollision=checkCollisionRect(
-                                    x+obj->startCollisionOffset.x,
-                                    y+obj->startCollisionOffset.y,
-                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
-                                    x2+obj2->startCollisionOffset.x,
-                                    y2+obj2->startCollisionOffset.y,
-                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
+                                    x+startOffset.x,
+                                    y+startOffset.y,
+                                    objWidth+endOffset.x-startOffset.x,
+                                    objHeight+endOffset.y-startOffset.y,
+                                    x2+startOffset2.x,
+                                    y2+startOffset2.y,
+                                    obj2Width+endOffset2.x-startOffset2.x,
+                                    obj2Height+endOffset2.y-startOffset2.y
                                 );
                             } else {
                                 hasCollision=checkCollisionInvertedRect(
-                                    x+obj->startCollisionOffset.x,
-                                    y+obj->startCollisionOffset.y,
-                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
-                                    x2+obj2->startCollisionOffset.x,
-                                    y2+obj2->startCollisionOffset.y,
-                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
+                                    x+startOffset.x,
+                                    y+startOffset.y,
+                                    objWidth+endOffset.x-startOffset.x,
+                                    objHeight+endOffset.y-startOffset.y,
+                                    x2+startOffset2.x,
+                                    y2+startOffset2.y,
+                                    obj2Width+endOffset2.x-startOffset2.x,
+                                    obj2Height+endOffset2.y-startOffset2.y
                                 );
                             }
                             break;
                         case COLLISION_CIRCLE:
                             if (!obj2->invertedCollision){
                                 hasCollision=checkCollisionCircle(
-                                    x+obj->startCollisionOffset.x,
-                                    y+obj->startCollisionOffset.y,
-                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
-                                    x2+obj2->startCollisionOffset.x,
-                                    y2+obj2->startCollisionOffset.y,
-                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
+                                    x+startOffset.x,
+                                    y+startOffset.y,
+                                    objWidth+endOffset.x-startOffset.x,
+                                    objHeight+endOffset.y-startOffset.y,
+                                    x2+startOffset2.x,
+                                    y2+startOffset2.y,
+                                    obj2Width+endOffset2.x-startOffset2.x,
+                                    obj2Height+endOffset2.y-startOffset2.y
                                 );
                             } else {
                                 hasCollision=checkCollisionInvertedCircle(
-                                    x+obj->startCollisionOffset.x,
-                                    y+obj->startCollisionOffset.y,
-                                    (obj->width+obj->endCollisionOffset.x-obj->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj->height+obj->endCollisionOffset.y-obj->startCollisionOffset.y)*scene->camera.zoom,
-                                    x2+obj2->startCollisionOffset.x,
-                                    y2+obj2->startCollisionOffset.y,
-                                    (obj2->width+obj2->endCollisionOffset.x-obj2->startCollisionOffset.x)*scene->camera.zoom,
-                                    (obj2->height+obj2->endCollisionOffset.y-obj2->startCollisionOffset.y)*scene->camera.zoom
+                                    x+startOffset.x,
+                                    y+startOffset.y,
+                                    objWidth+endOffset.x-startOffset.x,
+                                    objHeight+endOffset.y-startOffset.y,
+                                    x2+startOffset2.x,
+                                    y2+startOffset2.y,
+                                    obj2Width+endOffset2.x-startOffset2.x,
+                                    obj2Height+endOffset2.y-startOffset2.y
                                 );
                             }
                             break;
@@ -1015,4 +1027,9 @@ char* getCAESplash() {
     }
 
     return out;
+}
+
+void multVector2(Vector2* vector2, float k){
+    vector2->x *= k;
+    vector2->y *= k;
 }
