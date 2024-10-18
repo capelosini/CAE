@@ -9,6 +9,7 @@ Scene* mainMenu;
 ALLEGRO_AUDIO_STREAM* c418;
 ALLEGRO_SAMPLE* sfx;
 ProgressBar* playerLifeBar;
+Text* textInMainMenu;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -23,6 +24,9 @@ void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
             default:
                 break;
         }
+    }
+    if (ev.type == ALLEGRO_EVENT_MOUSE_AXES){
+        textInMainMenu->width = ev.mouse.x;
     }
 }
 
@@ -153,10 +157,11 @@ int main(){
     int size=70;
     Font* arialFont = loadTTF(engine, "./fonts/arial.ttf", 20);
     char* title = "Main menu";
-    addTextToScene(mainMenu, createText(title,engine->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, al_map_rgb(255, 255, 255), arialFont));
+    createText(title,engine->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, 0, al_map_rgb(255, 255, 255), al_map_rgb(5, 2, 50), NULL, arialFont, 10, 10, mainMenu);
     addButtonToScene(mainMenu, createButton(engine, engine->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./fonts/arial.ttf", createSubBitmap(engine, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
+    textInMainMenu=createText("Hello World!\nDeserunt aliqua duis aliqua magna adipisicing ea ex enim tempor eiusmod reprehenderit officia quis excepteur. Mollit veniam adipisicing incididunt qui est minim.", 200, 500, 400, al_map_rgb(255,255,255), al_map_rgb(0, 0, 0), NULL, arialFont, 50, 50, mainMenu);
     // MAIN SCENE
-    addTextToScene(mainScene, createText("Hello WOrld!", 20, 20, al_map_rgb(0,200,0), arialFont));
+    createText("Hello WOrld!", 20, 20, 0, al_map_rgb(0,200,0), al_map_rgba(0, 0, 0, 100), NULL, arialFont, 20, 20, mainScene);
     addButtonToScene(mainScene, createButton(engine, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./fonts/arial.ttf", NULL, onTestButtonClick));
     playerLifeBar = createProgressBar(engine->displayWidth-400, 50, 200, 20, 100, al_map_rgba(10,10,20,100), al_map_rgba(255,10,10,255));
     addProgressBarToScene(mainScene, playerLifeBar);

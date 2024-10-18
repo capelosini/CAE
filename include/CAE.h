@@ -3,6 +3,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_NONSTDC_NO_DEPRECATE
 #define CAE_DEBUG 1
+#define CAE_SPLASH_SCREEN 1
 #define CAE_RESERVE_SAMPLES 18
 
 #include <allegro5/allegro.h>
@@ -170,7 +171,11 @@ struct Text{
     char* text;
     ALLEGRO_COLOR color;
     Font* font;
+    int width;
+    ALLEGRO_COLOR backgroundColor;
+    ALLEGRO_BITMAP* backgroundBitmap;
     unsigned char visible;
+    Vector2 padding;
 };
 
 typedef struct Button Button;
@@ -321,10 +326,8 @@ void changeScene(CAEngine* engine, Scene* scene);
 void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
 // LOADS A TTF FONT AND RETURNS THE `Font*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 Font* loadTTF(CAEngine* engine, const char* path, int size);
-// CREATES A TEXT AND RETURNS THE `Text*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
-Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* font);
-// ADDS A TEXT TO A SCENE IN UI
-void addTextToScene(Scene* scene, Text* text);
+// CREATES A TEXT AND RETURNS THE `Text*`
+Text* createText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene);
 // CREATES A BUTTON AND RETURNS THE `Button*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
 // ADDS A BUTTON TO A SCENE IN UI

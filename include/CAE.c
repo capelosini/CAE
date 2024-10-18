@@ -116,8 +116,9 @@ CAEngine* initEngine(GameConfig config){
     al_register_event_source(engine->ev_queue, al_get_timer_event_source(engine->timer));
 
     al_start_timer(engine->timer);
-
-    playSplashScreen(engine);
+    
+    if (CAE_SPLASH_SCREEN)
+        playSplashScreen(engine);
 
     engine->startTime=time(NULL);
     srand(engine->startTime-2);
@@ -163,15 +164,60 @@ void renderButton(Button* button){
 
         al_draw_filled_rounded_rectangle(button->position.x, button->position.y, button->position.x+button->width, button->position.y+button->height, 5, 5, button->backgroundColor);
         float x = button->position.x+button->width/2-al_get_text_width(button->font->font, button->text)/2;
-        float y = button->position.y+button->height/2-button->font->size/2;
+        float y = button->position.y+button->height/2-al_get_font_line_height(button->font->font)/2;
         al_draw_text(button->font->font, button->foregroundColor, x, y, 0, button->text);
     }
 }
 
 void renderText(Text* text){
-    if (text->visible){
-        al_draw_text(text->font->font, text->color, text->position.x, text->position.y, 0, text->text);
+    if (!text->visible)
+        return;
+    
+    int lineHeight=al_get_font_line_height(text->font->font);
+    int textHeight=lineHeight;
+    char* textToDraw = (char*)malloc(strlen(text->text)+1);
+    char* tmp = (char*)malloc(strlen(text->text)+1);
+    strcpy(textToDraw, "");
+    strcpy(tmp, text->text);
+
+    if (text->width > 0){
+        // SEPARATION OF THE TEXT WITH \n
+        tmp = strtok(tmp, " ");
+        int lineWidth=0;
+        textHeight+=lineHeight;
+        while (tmp != NULL){
+            int wordWidth = al_get_text_width(text->font->font, tmp);
+            if (lineWidth+wordWidth >= text->width){
+                strcat(textToDraw, "\n");
+                textHeight+=lineHeight;
+                lineWidth=0;
+            } else if (lineWidth != 0) {
+                strcat(textToDraw, " ");
+            }
+            strcat(textToDraw, tmp);
+            lineWidth+=wordWidth;
+            tmp = strtok(NULL, " ");
+        }
+
+        // DRAW NON STATIC TEXT BACKGROUND
+        al_draw_filled_rectangle(text->position.x-text->padding.x, text->position.y-text->padding.y, text->position.x+text->width+text->padding.x, text->position.y+textHeight+text->padding.y, text->backgroundColor);
     }
+    else{
+        // DRAW STATIC TEXT BACKGROUND
+        al_draw_filled_rectangle(text->position.x-text->padding.x, text->position.y-text->padding.y, text->position.x+al_get_text_width(text->font->font, text->text)+text->padding.x, text->position.y+lineHeight+text->padding.y, text->backgroundColor);
+        strcpy(textToDraw, text->text);
+    }
+    // DRAW THE TEXT WITH \n SUPPORT 
+    tmp=strtok(textToDraw, "\n");
+    int line = 0;
+    while (tmp != NULL){
+        al_draw_text(text->font->font, text->color, text->position.x, text->position.y+lineHeight*line, 0, tmp);
+        line++;
+        tmp = strtok(NULL, "\n");
+    }
+    // FREE USED STUFF
+    free(textToDraw);
+    free(tmp);
 }
 
 void renderProgressBar(ProgressBar* bar){
@@ -899,7 +945,7 @@ Font* loadTTF(CAEngine* engine, const char* path, int size){
     return font;
 }
 
-Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* font){
+Text* createText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene){
     Text* textObj = (Text*)malloc(sizeof(Text));
     char* t = (char*)malloc(sizeof(char)*strlen(text)+1);
     strcpy(t, text);
@@ -908,12 +954,14 @@ Text* createText(const char* text, float x, float y, ALLEGRO_COLOR color, Font* 
     textObj->position.y=y;
     textObj->color=color;
     textObj->font=font;
+    textObj->width=width;
     textObj->visible=1;
+    textObj->backgroundBitmap=backBitmap;
+    textObj->backgroundColor=backColor;
+    textObj->padding.x=paddingX;
+    textObj->padding.y=paddingY;
+    addItemToLinkedList(scene->ui.texts, textObj);
     return textObj;
-}
-
-void addTextToScene(Scene* scene, Text* text){
-    addItemToLinkedList(scene->ui.texts, text);
 }
 
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){
