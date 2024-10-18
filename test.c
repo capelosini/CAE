@@ -94,8 +94,6 @@ int main(){
 
     engine = initEngine(config);
     mainScene = createScene(engine, mainSceneScript);
-    mainScene->camera.maxLimit.x=4800;
-    mainScene->camera.maxLimit.y=4800;
     mainMenu = createScene(engine, NULL);
     setEventFunction(engine, handleEvent);
 
@@ -129,8 +127,6 @@ int main(){
     setGameObjectBitmap(square3, loadBitmap(engine, "./images/demoTree.png"));
     setGameObjectBitmap(square4, createSubBitmap(engine, square3->bitmap, 0, 0, 500, 500));
     square2->color=al_map_rgb(255, 0, 0);
-
-    mainScene->camera.followTarget=square;
 
     printList(mainScene->objects);
     square->physics.enabled=1;
@@ -168,6 +164,11 @@ int main(){
     addProgressBarToScene(mainScene, playerLifeBar);
 
     mainScene->fadeIn.speed=2;
+
+    mainScene->camera.followTarget=square;
+    mainScene->camera.zoom=1.5;
+    mainScene->camera.maxLimit.x=2000;
+    mainScene->camera.maxLimit.y=2000;
 
     while (engine->isAlive){
         render(engine);

@@ -375,13 +375,13 @@ void render(CAEngine* engine){
     if (scene->camera.minLimit.x != scene->camera.maxLimit.x && scene->camera.minLimit.y != scene->camera.maxLimit.y){
         if (scene->camera.offset.x < scene->camera.minLimit.x){
             scene->camera.offset.x=scene->camera.minLimit.x;
-        } else if (scene->camera.offset.x+engine->displayWidth > scene->camera.maxLimit.x){
-            scene->camera.offset.x=scene->camera.maxLimit.x-engine->displayWidth;
+        } else if (scene->camera.offset.x+engine->displayWidth > scene->camera.maxLimit.x*scene->camera.zoom){
+            scene->camera.offset.x=scene->camera.maxLimit.x*scene->camera.zoom-engine->displayWidth;
         }
         if (scene->camera.offset.y < scene->camera.minLimit.y){
             scene->camera.offset.y=scene->camera.minLimit.y;
-        } else if (scene->camera.offset.y+engine->displayHeight > scene->camera.maxLimit.y){
-            scene->camera.offset.y=scene->camera.maxLimit.y-engine->displayHeight;
+        } else if (scene->camera.offset.y+engine->displayHeight > scene->camera.maxLimit.y*scene->camera.zoom){
+            scene->camera.offset.y=scene->camera.maxLimit.y*scene->camera.zoom-engine->displayHeight;
         }
     }
 
