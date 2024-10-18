@@ -200,7 +200,7 @@ void renderText(Text* text){
         }
 
         // DRAW NON STATIC TEXT BACKGROUND
-        al_draw_filled_rectangle(text->position.x-text->padding.x, text->position.y-text->padding.y, text->position.x+text->width+text->padding.x, text->position.y+textHeight+text->padding.y, text->backgroundColor);
+        al_draw_filled_rectangle(text->position.x-text->padding.x, text->position.y-text->padding.y, text->position.x+text->width+text->padding.x*2, text->position.y+textHeight+text->padding.y, text->backgroundColor);
     }
     else{
         // DRAW STATIC TEXT BACKGROUND
