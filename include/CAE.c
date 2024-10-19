@@ -552,7 +552,6 @@ void render(CAEngine* engine){
         // IS OBJECT NOT VISIBLE IN CAMERA
         if (!((obj->position.x*scene->camera.zoom+obj->width*scene->camera.zoom > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+engine->displayWidth/scene->camera.zoom) && (obj->position.y*scene->camera.zoom+obj->height*scene->camera.zoom > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+engine->displayHeight/scene->camera.zoom))){
             item=item->next;
-            printf("\n%f not visible!", obj->position.x);
             continue;
         }
 
@@ -702,12 +701,20 @@ void printList(LinkedList* list){
 
 ALLEGRO_SAMPLE* loadAudioSample(CAEngine* engine, const char* path){
     ALLEGRO_SAMPLE* sample = al_load_sample(path);
+    if (!sample){
+        printf("\nERROR: Couldn't load audio sample: %s", path);
+        return NULL;
+    }
     addItemToLinkedList(engine->audioSamples, sample);
     return sample;
 }
 
 ALLEGRO_AUDIO_STREAM* loadAudioStream(CAEngine* engine, const char* path, int buffers, int samples){
     ALLEGRO_AUDIO_STREAM* stream = al_load_audio_stream(path, buffers, samples);
+    if (!stream){
+        printf("\nERROR: Couldn't load audio stream: %s", path);
+        return NULL;
+    }
     al_attach_audio_stream_to_mixer(stream, al_get_default_mixer());
     addItemToLinkedList(engine->audioStreams, stream);
     return stream;
@@ -869,12 +876,20 @@ void addGameObjectToScene(Scene* scene, GameObject* obj){
 
 ALLEGRO_BITMAP* loadBitmap(CAEngine* engine, const char* pathToBitmap){
     ALLEGRO_BITMAP* bm = al_load_bitmap(pathToBitmap);
+    if (!bm){
+        printf("\nERROR: Couldn't load bitmap: %s", pathToBitmap);
+        return NULL;
+    }
     addItemToLinkedList(engine->bitmaps, bm);
     return bm;
 }
 
 ALLEGRO_BITMAP* createSubBitmap(CAEngine* engine, ALLEGRO_BITMAP* bitmap, int sx, int sy, int sw, int sh){
     ALLEGRO_BITMAP* subBitmap = al_create_sub_bitmap(bitmap, sx, sy, sw, sh);
+    if (!subBitmap){
+        printf("\nERROR: Couldn't create sub bitmap!");
+        return NULL;
+    }
     addItemToLinkedList(engine->bitmaps, subBitmap);
     return subBitmap;
 }
@@ -937,8 +952,12 @@ void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap){
 }
 
 Font* loadTTF(CAEngine* engine, const char* path, int size){
-    Font* font = (Font*)malloc(sizeof(Font));
     ALLEGRO_FONT* ttf = al_load_ttf_font(path, size, 0);
+    if (!ttf){
+        printf("\nERROR: Couldn't load font ttf: %s", path);
+        return NULL;
+    }
+    Font* font = (Font*)malloc(sizeof(Font));
     font->font=ttf;
     font->size=size;
     addItemToLinkedList(engine->fonts, font);
@@ -965,6 +984,14 @@ Text* addText(const char* text, float x, float y, int width, ALLEGRO_COLOR color
 }
 
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){
+    int fontSize = round(height/2);
+    Font* font = loadTTF(engine, pathToFontFile, fontSize);
+    if (!font){
+        printf("\nERROR: Couldn't load ttf file for button font: %s", pathToFontFile);
+        font = (Font*)malloc(sizeof(Font));
+        font->font=al_create_builtin_font();
+        font->size=fontSize;
+    }
     Button* button = (Button*)malloc(sizeof(Button));
     button->position.x=x;
     button->position.y=y;
@@ -978,7 +1005,7 @@ Button* createButton(CAEngine* engine, float x, float y, int width, int height, 
     button->text=btnTxt;
     button->backgroundColor=backgroundColor;
     button->foregroundColor=foregroundColor;
-    button->font=loadTTF(engine, pathToFontFile, round(height/2));
+    button->font=font;
     int textWidth=al_get_text_width(button->font->font, btnTxt);
     if (textWidth > width-20)
         button->width=textWidth+20;
