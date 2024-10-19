@@ -945,7 +945,7 @@ Font* loadTTF(CAEngine* engine, const char* path, int size){
     return font;
 }
 
-Text* createText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene){
+Text* addText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene){
     Text* textObj = (Text*)malloc(sizeof(Text));
     char* t = (char*)malloc(sizeof(char)*strlen(text)+1);
     strcpy(t, text);
