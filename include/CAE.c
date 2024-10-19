@@ -1082,21 +1082,21 @@ void multVector2(Vector2* vector2, float k){
     vector2->y *= k;
 }
 
-Vector2 getMovimentVector2(ALLEGRO_KEYBOARD_STATE* kState, int keyLeft, int keyRight, int keyUp, int keyDown){
-    Vector2 moviment = {0, 0};
+Vector2 getMovementVector2(ALLEGRO_KEYBOARD_STATE* kState, int keyLeft, int keyRight, int keyUp, int keyDown){
+    Vector2 movement = {0, 0};
 
     if(al_key_down(kState, keyLeft)){
-        moviment.x -= 1;
+        movement.x -= 1;
     }
     if(al_key_down(kState, keyRight)){
-        moviment.x += 1;
+        movement.x += 1;
     }
     if(al_key_down(kState, keyUp)){
-        moviment.y -= 1;
+        movement.y -= 1;
     }
     if(al_key_down(kState, keyDown)){
-        moviment.y += 1;
+        movement.y += 1;
     }
     
-    return moviment;
+    return movement;
 }

@@ -36,7 +36,7 @@ void mainSceneScript(Scene* self){
     //self->camera.y-=1;
     ALLEGRO_KEYBOARD_STATE keyState;
     al_get_keyboard_state(&keyState);
-    Vector2 moviment = getMovimentVector2(&keyState, ALLEGRO_KEY_A, ALLEGRO_KEY_D, ALLEGRO_KEY_W, ALLEGRO_KEY_S);
+    Vector2 moviment = getMovementVector2(&keyState, ALLEGRO_KEY_A, ALLEGRO_KEY_D, ALLEGRO_KEY_W, ALLEGRO_KEY_S);
     
     square->physics.acc = (Vector2){abs(moviment.x)*playerAcc, abs(moviment.y)*playerAcc};
     if (moviment.x != 0){
