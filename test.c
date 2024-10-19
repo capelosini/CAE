@@ -10,6 +10,7 @@ ALLEGRO_AUDIO_STREAM* c418;
 ALLEGRO_SAMPLE* sfx;
 ProgressBar* playerLifeBar;
 Text* textInMainMenu;
+float playerAcc=1.5;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
     if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -35,29 +36,15 @@ void mainSceneScript(Scene* self){
     //self->camera.y-=1;
     ALLEGRO_KEYBOARD_STATE keyState;
     al_get_keyboard_state(&keyState);
-    char up = al_key_down(&keyState, ALLEGRO_KEY_W);
-    char down = al_key_down(&keyState, ALLEGRO_KEY_S);
-    char left = al_key_down(&keyState, ALLEGRO_KEY_A);
-    char right = al_key_down(&keyState, ALLEGRO_KEY_D);
-    if (up && !down){
-        square->physics.directions.y=-1;
-        square->physics.acc.y=1;
-    } else if (down && !up){
-        square->physics.directions.y=1;
-        square->physics.acc.y=1;
-    } else{
-        square->physics.acc.y=0;
-    }
-    if (left && !right){
-        square->physics.directions.x=-1;
-        square->physics.acc.x=1;
-        square->animation.direction.x=-1;
-    } else if (right && !left){
-        square->physics.directions.x=1;
-        square->physics.acc.x=1;
-        square->animation.direction.x=1;
-    } else{
-        square->physics.acc.x=0;
+    Vector2 moviment = getMovimentVector2(&keyState, ALLEGRO_KEY_A, ALLEGRO_KEY_D, ALLEGRO_KEY_W, ALLEGRO_KEY_S);
+    
+    square->physics.acc = (Vector2){abs(moviment.x)*playerAcc, abs(moviment.y)*playerAcc};
+    if (moviment.x != 0){
+        square->physics.directions.x = moviment.x;
+        square->animation.direction.x = moviment.x;
+    } 
+    if (moviment.y != 0){
+        square->physics.directions.y = moviment.y;
     }
 }
 
@@ -130,7 +117,7 @@ int main(){
 
     printList(mainScene->objects);
     square->physics.enabled=1;
-    square->physics.friction=0.4;
+    square->physics.friction=0.3;
     square->physics.maxSpeed=5;
     //square->physics.gravity=1;
 

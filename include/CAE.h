@@ -350,5 +350,7 @@ void playSplashScreen(CAEngine* engine);
 char* getCAESplash();
 // MULTIPLY THE VECTOR2 BY A CONSTANT
 void multVector2(Vector2* vector2, float k);
+// RETURNS A MOVIMENT VECTOR2 BASED ON THE INPUT KEYS
+Vector2 getMovimentVector2(ALLEGRO_KEYBOARD_STATE* kState, int keyLeft, int keyRight, int keyUp, int keyDown);
 
 #endif
