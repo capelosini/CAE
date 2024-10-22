@@ -340,6 +340,8 @@ void addProgressBarToScene(Scene* scene, ProgressBar* bar);
 void changeText(Text* text, const char* newText);
 // RANDOM INTEGER BETWEEN MIN AND MAX, INCLUDING BOTH
 int randInt(int min, int max);
+// RANDOM FLOAT BETWEEN MIN AND MAX, INCLUDING BOTH
+float randFloat(int min, int max);
 // CREATE A TEMP FILE AND RETURNS THE PATH OF THE FILE
 void createTempFile(const char* b64Content, char* resultPath);
 // CLOSE/DELETE THE TEMP FILE

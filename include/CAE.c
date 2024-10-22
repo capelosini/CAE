@@ -1048,6 +1048,10 @@ int randInt(int min, int max){
     return rand() % (max-min+1) + min;
 }
 
+float randFloat(int min, int max){
+    return (float)rand() / (float)RAND_MAX * (max-min) + min;
+}
+
 void createTempFile(const char* b64Content, char* resultPath){
     ALLEGRO_PATH* tmpPath;
     al_fclose(al_make_temp_file("tfXXXXXX", &tmpPath));
