@@ -146,6 +146,15 @@ struct FadeEffect{
     float speed;
 };
 
+typedef struct TileGenerationSettings TileGenerationSettings;
+struct TileGenerationSettings{
+    unsigned char enabled;
+    int idMinX;
+    int idMaxX;
+    int idMinY;
+    int idMaxY;
+};
+
 typedef struct Scene Scene;
 struct Scene{
     GameCamera camera;
@@ -157,6 +166,7 @@ struct Scene{
     World* world;
     FadeEffect fadeIn;
     LinkedList* triggers;
+    TileGenerationSettings tileGenerationSettings;
 };
 
 typedef struct Font Font;
@@ -354,5 +364,7 @@ char* getCAESplash();
 void multVector2(Vector2* vector2, float k);
 // RETURNS A MOVEMENT VECTOR2 BASED ON THE INPUT KEYS
 Vector2 getMovementVector2(ALLEGRO_KEYBOARD_STATE* kState, int keyLeft, int keyRight, int keyUp, int keyDown);
+// SET THE AUTO TILE GENERATION FOR THE WORLD OF THE SCENE
+void setSceneAutoTileGeneration(Scene* scene, int minIdX, int maxIdX, int minIdY, int maxIdY);
 
 #endif

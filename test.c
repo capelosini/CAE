@@ -100,7 +100,7 @@ int main(){
 
     GameObject* map = createGameObject(SOLID, 0, 0, 2000, 2000, mainScene);
     map->color=al_map_rgba(0, 0, 0, 0);
-    map->collisionEnabled=1;
+    //map->collisionEnabled=1;
     map->invertedCollision=1;
 
     square->collisionEnabled=1;
@@ -153,9 +153,11 @@ int main(){
     mainScene->fadeIn.speed=2;
 
     mainScene->camera.followTarget=square;
-    mainScene->camera.zoom=1.5;
-    mainScene->camera.maxLimit.x=2000;
-    mainScene->camera.maxLimit.y=2000;
+    mainScene->camera.zoom=0.5;
+    //mainScene->camera.maxLimit.x=2000;
+    //mainScene->camera.maxLimit.y=2000;
+
+    //setSceneAutoTileGeneration(mainScene, 1, 3, 1, 3);
 
     while (engine->isAlive){
         render(engine);

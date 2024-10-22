@@ -311,18 +311,51 @@ void render(CAEngine* engine){
 
     // RENDER WORLD TILES
     if (scene->world != NULL){
+        float tileWidth=scene->world->tileWidth*scene->camera.zoom;
+        float tileHeight=scene->world->tileHeight*scene->camera.zoom;
+
+        // CREATES A MATRIX OF THE VISIBLE TILES
+        // int screenMatrixSizeX=(int)ceil(engine->displayWidth/tileWidth);
+        // int screenMatrixSizeY=(int)ceil(engine->displayHeight/tileHeight);
+        // unsigned char screenMatrix[screenMatrixSizeY][screenMatrixSizeX];
+        // memset(screenMatrix, 0, screenMatrixSizeX*screenMatrixSizeY);
+
+        // float tileStartPositionX = scene->camera.offset.x / tileWidth;
+        // tileStartPositionX = scene->camera.offset.x-(tileStartPositionX - (int)tileStartPositionX)*tileWidth;
+        // float tileStartPositionXId = tileStartPositionX/tileWidth;
+        // float tileStartPositionY = scene->camera.offset.y / tileHeight;
+        // tileStartPositionY = scene->camera.offset.y-(tileStartPositionY - (int)tileStartPositionY)*tileHeight;
+        // float tileStartPositionYId = tileStartPositionY/tileHeight;
+
         LinkedItem* item = scene->world->tiles->first;
         while (item != NULL){
             Tile* tile = (Tile*)item->data;
-            float x = tile->x*scene->world->tileWidth*scene->camera.zoom;
-            float y = tile->y*scene->world->tileHeight*scene->camera.zoom;
+            float x = tile->x*tileWidth;
+            float y = tile->y*tileHeight;
             // NOT DRAW IF NOT VISIBLE IN CAMERA
-            if ((x+scene->world->tileWidth*scene->camera.zoom > scene->camera.offset.x && x < scene->camera.offset.x+engine->displayWidth) && (y+scene->world->tileHeight*scene->camera.zoom > scene->camera.offset.y && y < scene->camera.offset.y+engine->displayHeight)){
+            if ((x+tileWidth > scene->camera.offset.x && x < scene->camera.offset.x+engine->displayWidth) && (y+tileHeight > scene->camera.offset.y && y < scene->camera.offset.y+engine->displayHeight)){
+                //screenMatrix[tile->y-(int)tileStartPositionYId][tile->x-(int)tileStartPositionXId]=1;
                 globalToLocal(scene, &x, &y);
-                al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, scene->world->tileWidth*scene->camera.zoom, scene->world->tileHeight*scene->camera.zoom, 0);
+                al_draw_scaled_bitmap(scene->world->tileSheet, tile->idX*scene->world->tileWidth, tile->idY*scene->world->tileHeight, scene->world->tileWidth, scene->world->tileHeight, x, y, tileWidth, tileHeight, 0);
             }
             item = item->next;
         }
+        //printf("\n");
+        // if (scene->tileGenerationSettings.enabled){
+        //     unsigned char tmpMatrix[screenMatrixSizeY][screenMatrixSizeX];
+        //     memset(tmpMatrix, 1, screenMatrixSizeX*screenMatrixSizeY);
+        //     if (memcmp(screenMatrix, tmpMatrix, screenMatrixSizeX*screenMatrixSizeY) != 0){
+        //         for (int i=0; i<screenMatrixSizeY; i++){
+        //             for (int j=0; j<screenMatrixSizeX; j++){
+        //                 if (screenMatrix[i][j] != 0){ continue; }
+        //                 //printf("\nIDs: X: %d, Y: %d", (int)(j+tileStartPositionXId), (int)(i+tileStartPositionYId));
+        //                 addWorldTile(scene, randInt(scene->tileGenerationSettings.idMinX, scene->tileGenerationSettings.idMaxX), 
+        //                 randInt(scene->tileGenerationSettings.idMinY, scene->tileGenerationSettings.idMaxY), j+tileStartPositionXId, i+tileStartPositionYId);
+        //             }
+        //             //printf("\n");
+        //         }
+        //     }
+        // }
     }
 
     // HERE: USER FUNCTION TO MANIPULATE THE SCENE (Objects positions for example)
@@ -549,11 +582,11 @@ void render(CAEngine* engine){
             obj->position.y=y;
         }
 
-        // IS OBJECT NOT VISIBLE IN CAMERA
-        if (!((obj->position.x*scene->camera.zoom+obj->width*scene->camera.zoom > scene->camera.offset.x && obj->position.x < scene->camera.offset.x+engine->displayWidth/scene->camera.zoom) && (obj->position.y*scene->camera.zoom+obj->height*scene->camera.zoom > scene->camera.offset.y && obj->position.y < scene->camera.offset.y+engine->displayHeight/scene->camera.zoom))){
+        // CHECK IF OBJ IS VISIBLE, DONT RENDER IF NOT
+        if (x+obj->width*scene->camera.zoom < scene->camera.offset.x || x > scene->camera.offset.x+engine->displayWidth || y+obj->height*scene->camera.zoom < scene->camera.offset.y || y > scene->camera.offset.y+engine->displayHeight){
             item=item->next;
             continue;
-        }
+        } 
 
         globalToLocal(scene, &x, &y);
 
@@ -788,6 +821,9 @@ Scene* createScene(CAEngine* engine, void (*scriptFunction)(Scene*)){
     scene->fadeIn.speed=1;
     scene->fadeIn.value=0;
     scene->triggers = createLinkedList(NULL);
+    scene->tileGenerationSettings.enabled=0;
+    scene->tileGenerationSettings.idMaxX=scene->tileGenerationSettings.idMinX=0;
+    scene->tileGenerationSettings.idMaxY=scene->tileGenerationSettings.idMinY=0;
 
     addItemToLinkedList(engine->scenes, scene);
     return scene;
@@ -1130,4 +1166,14 @@ Vector2 getMovementVector2(ALLEGRO_KEYBOARD_STATE* kState, int keyLeft, int keyR
     }
     
     return movement;
+}
+
+void setSceneAutoTileGeneration(Scene* scene, int minIdX, int maxIdX, int minIdY, int maxIdY){
+    if (scene == NULL || minIdX > maxIdX || minIdY > maxIdY)
+        return;
+    scene->tileGenerationSettings.enabled=1;
+    scene->tileGenerationSettings.idMaxX=maxIdX;
+    scene->tileGenerationSettings.idMaxY=maxIdY;
+    scene->tileGenerationSettings.idMinX=minIdX;
+    scene->tileGenerationSettings.idMinY=minIdY;
 }
