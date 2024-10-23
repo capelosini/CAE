@@ -671,7 +671,17 @@ void freeLinkedListItems(LinkedItem* item, LinkedList* list){
 }
 
 void freeLinkedList(LinkedList* list){
-    freeLinkedListItems(list->first, list);
+    //freeLinkedListItems(list->first, list);
+    LinkedItem* item = list->first;
+    while (item != NULL){
+        LinkedItem* itemToFree = item;
+        item=item->next;
+        if (list->onDestroy != NULL)
+            list->onDestroy(itemToFree);
+        freeLinkedItem(itemToFree);
+        if (CAE_DEBUG)
+            printf("\nFreed item!");
+    }
     free(list);
     if (CAE_DEBUG)
         printf("\n");

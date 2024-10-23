@@ -266,7 +266,7 @@ void render(CAEngine* engine);
 LinkedList* createLinkedList(void (*onDestroy)(LinkedItem* item));
 // FREE A UNIQUE LINKED LIST ITEM
 void freeLinkedItem(LinkedItem* item);
-// A RECURIVE WAY TO FREE A LINKED LIST THAT IS CALLED BY THE FUNCTION `freeLinkedList(LinkedList* list)`, THIS FUNCTION ALSO CALLS THE LLFF type of function
+// DEPRECATED, NOT USED ANYMORE, STACK OVERFLOW!: A RECURIVE WAY TO FREE A LINKED LIST THAT IS CALLED BY THE FUNCTION `freeLinkedList(LinkedList* list)`, THIS FUNCTION ALSO CALLS THE LLFF type of function
 void freeLinkedListItems(LinkedItem* item, LinkedList* list);
 // THE FINAL FUNCTION TO FREE A LINKED LIST, THIS FUNCTION IS THE FUNCTION YOU NEED TO CALL TO FREE A LINKED LIST
 void freeLinkedList(LinkedList* list);
