@@ -234,6 +234,7 @@ struct CAEngine{
 };
 
 // LLFF FUNCTIONS ARE USED TO CUSTOMIZE THE FREE LINKED LIST FUNCTION
+void LLFFFreeFreedStuff(LinkedItem* item);
 void LLFFFreeButtons(LinkedItem* item);
 void LLFFFreeTexts(LinkedItem* item);
 void LLFFDestroyBitmaps(LinkedItem* item);
@@ -274,6 +275,8 @@ void freeLinkedList(LinkedList* list);
 void addItemToLinkedList(LinkedList* list, void* data);
 // REMOVE AN ITEM FROM A LINKED LIST
 void removeItemLinkedList(LinkedList* list, void* searchData);
+// SEARCH A DATA IN A LINKED LIST
+LinkedItem* searchDataInLinkedList(LinkedList* list, void* data);
 // MORE A DEBUG THING, BUT IF YOU WANT TO PRINT LIKE HOW IS THE ACTUAL STRUCT OF A LINKED LIST, CALL THIS
 void printList(LinkedList* list);
 // LOADS AN AUDIO SAMPLE AND RETURNS THE `ALLEGRO_SAMPLE*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE

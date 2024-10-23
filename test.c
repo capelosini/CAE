@@ -1,15 +1,15 @@
 #include "include/CAE.h"
 #include <stdio.h>
 
-CAEngine* engine;
-GameObject* square;
-GameObject* square2;
-Scene* mainScene;
-Scene* mainMenu;
-ALLEGRO_AUDIO_STREAM* c418;
-ALLEGRO_SAMPLE* sfx;
-ProgressBar* playerLifeBar;
-Text* textInMainMenu;
+CAEngine* engine=NULL;
+GameObject* square=NULL;
+GameObject* square2=NULL;
+Scene* mainScene=NULL;
+Scene* mainMenu=NULL;
+ALLEGRO_AUDIO_STREAM* c418=NULL;
+ALLEGRO_SAMPLE* sfx=NULL;
+ProgressBar* playerLifeBar=NULL;
+Text* textInMainMenu=NULL;
 float playerAcc=1.5;
 
 void handleEvent(ALLEGRO_EVENT ev, Scene* scene, CAEngine* engine){
@@ -144,6 +144,7 @@ int main(){
     addText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ut tincidunt elit. Nunc a magna at nulla tempor iaculis. Curabitur at enim sollicitudin, varius nisi vel, viverra odio. Ut porta metus sed metus gravida elementum. Pellentesque ut mi id quam euismod convallis. Duis vulputate tempus sagittis. Quisque aliquam justo justo, eget lobortis neque tempor non.Integer porta volutpat turpis, nec venenatis ante volutpat sit amet. Proin condimentum vitae augue id tincidunt. Donec tristique lectus non dui pellentesque tincidunt. In sit amet leo suscipit, feugiat leo id, condimentum tellus. Proin vel tempor metus. Mauris in auctor velit. Donec justo justo, iaculis eget pellentesque eget, interdum a nibh. Aenean tincidunt tempor sem. Integer eget elementum metus. Suspendisse non fringilla nunc, sit amet suscipit diam.Suspendisse a justo lorem. Phasellus ac nulla sed arcu fermentum sollicitudin. Suspendisse potenti. Aenean a augue venenatis, rhoncus sapien ut, laoreet felis. Vivamus mi neque, iaculis ac ligula eget, fermentum maximus elit. Praesent at elementum lorem, et tincidunt leo. Nunc ut lacinia ligula. Aliquam eu est finibus, iaculis ipsum vitae, dignissim risus. Proin pulvinar urna sit amet metus pharetra, eget pulvinar nisl sodales. Proin aliquam dolor at urna dignissim maximus. Nulla imperdiet varius pulvinar", 800, 200, 340, al_map_rgb(255, 255, 255), al_map_rgba(0,0,0,100), NULL, arialFont, 50, 50, mainMenu);
     addButtonToScene(mainMenu, createButton(engine, engine->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./fonts/arial.ttf", createSubBitmap(engine, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
     textInMainMenu=addText("Hello World!\nDeserunt aliqua duis aliqua magna adipisicing ea ex enim tempor eiusmod reprehenderit officia quis excepteur. Mollit veniam adipisicing incididunt qui est minim.", 200, 500, 400, al_map_rgb(255,255,255), al_map_rgb(0, 0, 0), NULL, arialFont, 50, 50, mainMenu);
+    addGameObjectToScene(mainMenu, square);
     // MAIN SCENE
     addText("Hello WOrld!", 20, 20, 0, al_map_rgb(0,200,0), al_map_rgba(0, 0, 0, 100), NULL, arialFont, 20, 20, mainScene);
     addButtonToScene(mainScene, createButton(engine, 20, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255,255,255), "Click me!", "./fonts/arial.ttf", NULL, onTestButtonClick));

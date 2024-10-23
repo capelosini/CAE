@@ -2,7 +2,13 @@
 #include <stdio.h>
 #include <math.h>
 
+LinkedList* freedStuff;
+
 // LLFF : (L)inked (L)ist (F)ree (F)unction
+
+void LLFFFreeFreedStuff(LinkedItem* item){
+    item->data=NULL;
+}
 
 void LLFFFreeButtons(LinkedItem* item){
     Button* btn = item->data;
@@ -108,6 +114,8 @@ CAEngine* initEngine(GameConfig config){
     engine->audioStreams = createLinkedList(LLFFDestroyAudioStreams);
     engine->audioMixers = createLinkedList(LLFFDestroyAudioMixers);
 
+    freedStuff=createLinkedList(LLFFFreeFreedStuff);
+
     engine->currentScene=NULL;
 
     al_register_event_source(engine->ev_queue, al_get_display_event_source(engine->display));
@@ -133,6 +141,7 @@ void freeEngine(CAEngine* engine){
     freeLinkedList(engine->audioSamples);
     freeLinkedList(engine->audioStreams);
     freeLinkedList(engine->audioMixers);
+    freeLinkedList(freedStuff);
     al_destroy_display(engine->display);
     al_destroy_event_queue(engine->ev_queue);
     al_destroy_timer(engine->timer);
@@ -676,11 +685,16 @@ void freeLinkedList(LinkedList* list){
     while (item != NULL){
         LinkedItem* itemToFree = item;
         item=item->next;
-        if (list->onDestroy != NULL)
-            list->onDestroy(itemToFree);
-        freeLinkedItem(itemToFree);
-        if (CAE_DEBUG)
-            printf("\nFreed item!");
+        if (list != freedStuff && searchDataInLinkedList(freedStuff, itemToFree->data) == NULL){
+            addItemToLinkedList(freedStuff, itemToFree->data);
+            if (list->onDestroy != NULL)
+                list->onDestroy(itemToFree);
+            freeLinkedItem(itemToFree);
+            if (CAE_DEBUG)
+                printf("\nFreed item!");
+        } else{
+            free(itemToFree);
+        }
     }
     free(list);
     if (CAE_DEBUG)
@@ -730,6 +744,16 @@ void removeItemLinkedList(LinkedList* list, void* searchData){
         }
         item=item->next;
     }
+}
+
+LinkedItem* searchDataInLinkedList(LinkedList* list, void* data){
+    LinkedItem* item = list->first;
+    while (item != NULL){
+        if (item->data == data)
+            return item;
+        item=item->next;
+    }
+    return NULL;
 }
 
 void printList(LinkedList* list){
