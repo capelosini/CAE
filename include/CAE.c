@@ -1034,7 +1034,7 @@ Font* loadTTF(CAEngine* engine, const char* path, int size){
     return font;
 }
 
-Text* addText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene){
+Text* createText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene){
     Text* textObj = (Text*)malloc(sizeof(Text));
     char* t = (char*)malloc(sizeof(char)*strlen(text)+1);
     strcpy(t, text);
@@ -1051,6 +1051,10 @@ Text* addText(const char* text, float x, float y, int width, ALLEGRO_COLOR color
     textObj->padding.y=paddingY;
     addItemToLinkedList(scene->ui.texts, textObj);
     return textObj;
+}
+
+void addTextToScene(Scene* scene, Text* text){
+    addItemToLinkedList(scene->ui.texts, text);
 }
 
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*)){

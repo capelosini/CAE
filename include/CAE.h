@@ -340,7 +340,9 @@ void setGameObjectBitmap(GameObject* obj, ALLEGRO_BITMAP* bitmap);
 // LOADS A TTF FONT AND RETURNS THE `Font*`, ALSO PUTS IN FINAL FREES LIST OF THE ENGINE
 Font* loadTTF(CAEngine* engine, const char* path, int size);
 // CREATES A TEXT AND RETURNS THE `Text*`
-Text* addText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene);
+Text* createText(const char* text, float x, float y, int width, ALLEGRO_COLOR color, ALLEGRO_COLOR backColor, ALLEGRO_BITMAP* backBitmap, Font* font, float paddingX, float paddingY, Scene* scene);
+// ADD A Text* TO A SCENE IN UI
+void addTextToScene(Scene* scene, Text* text);
 // CREATES A BUTTON AND RETURNS THE `Button*`, ALSO ADDS THIS TO THE FREES LIST OF THE ENGINE
 Button* createButton(CAEngine* engine, float x, float y, int width, int height, ALLEGRO_COLOR backgroundColor, ALLEGRO_COLOR foregroundColor, const char* text, const char* pathToFontFile, ALLEGRO_BITMAP* bitmap, void (*onClick)(Scene*));
 // ADDS A BUTTON TO A SCENE IN UI
