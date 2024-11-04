@@ -69,6 +69,10 @@ void onPlayerCollision(GameObject* self, GameObject* other){
     }
 }
 
+void onPlayerAnimationEnd(){
+    printf("\nANIMATION ENDED!");
+}
+
 int main(){
     GameConfig config;
     config.fps=60;
@@ -160,6 +164,10 @@ int main(){
     //mainScene->camera.maxLimit.y=2000;
 
     //setSceneAutoTileGeneration(mainScene, 1, 3, 1, 3);
+
+    //square->animation.loop=0;
+
+    square->animation.onAnimationEnd=onPlayerAnimationEnd;
 
     while (engine->isAlive){
         render(engine);

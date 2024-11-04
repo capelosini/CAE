@@ -69,6 +69,8 @@ struct AnimationProps{
     int totalFrames;
     float fps;
     Vector2 direction;
+    void (*onAnimationEnd)();
+    unsigned char loop;
 };
 
 typedef struct GameObject GameObject;

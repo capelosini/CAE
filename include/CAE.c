@@ -608,8 +608,16 @@ void render(CAEngine* engine){
                 al_draw_scaled_bitmap(obj->bitmap, 0, 0, al_get_bitmap_width(obj->bitmap), al_get_bitmap_height(obj->bitmap), x, y, obj->width*scene->camera.zoom, obj->height*scene->camera.zoom, 0);
                 break;
             case ANIMATED_SPRITE:
-                if ((int)obj->animation.index.x > obj->animation.totalFrames-1)
-                    obj->animation.index.x=0;
+                // animation end
+                if ((int)obj->animation.index.x > obj->animation.totalFrames-1){
+                    if (obj->animation.loop){
+                        obj->animation.index.x=0;
+                    } else{
+                        obj->animation.index.x=obj->animation.totalFrames-1;
+                    }
+                    if (obj->animation.onAnimationEnd != NULL)
+                        obj->animation.onAnimationEnd(obj);
+                }
                 //printf("Index: %d\n", obj->animation.width);
                 if (obj->animation.direction.x<0)
                     x+=fabs(obj->width*obj->animation.direction.x*scene->camera.zoom);
@@ -915,6 +923,10 @@ GameObject* createGameObject(enum OBJECT_TYPE type, float x, float y, int width,
     newObj->bitmap=NULL;
     newObj->animation.direction.x=1;
     newObj->animation.direction.y=1;
+    newObj->animation.onAnimationEnd=NULL;
+    newObj->animation.index.x=0;
+    newObj->animation.index.y=0;
+    newObj->animation.loop=1;
     newObj->collisionEnabled=0;
     newObj->collisionType=COLLISION_RECT;
     newObj->onCollision=NULL;
@@ -968,8 +980,6 @@ void setGameObjectAnimation(GameObject* obj, ALLEGRO_BITMAP* bitmap, int frameWi
     if (obj->type != ANIMATED_SPRITE)
        return;
     obj->bitmap = bitmap;
-    obj->animation.index.x=0;
-    obj->animation.index.y=0;
     obj->animation.width=frameWidth;
     obj->animation.height=frameHeight;
     obj->animation.totalFrames=totalFrames;
