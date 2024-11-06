@@ -40,7 +40,7 @@ struct Vector2{
 
 typedef struct GameConfig GameConfig;
 struct GameConfig{
-    char fullscreen;
+    unsigned char fullscreen;
     int sizeX;
     int sizeY;
     int posX;
@@ -221,6 +221,8 @@ struct CAEngine{
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *ev_queue;
     ALLEGRO_TIMER *timer;
+    Vector2 position;
+    unsigned char fullscreen;
     int displayWidth;
     int displayHeight;
     float fps;
@@ -245,6 +247,11 @@ void LLFFFreeScenes(LinkedItem* item);
 void LLFFDestroyAudioSamples(LinkedItem* item);
 void LLFFDestroyAudioStreams(LinkedItem* item);
 void LLFFDestroyAudioMixers(LinkedItem* item);
+
+// GETS THE CURRENT DEFAULT DISPLAY ADAPTER
+int getCurrentDisplayAdapter(CAEngine* engine);
+// GETS THE TARGET MONITOR WIDTH AND HEIGHT
+Vector2 getMonitorSize(int adapter);
 // ASSERT IF THE MODULE OF ALLEGRO IS OK
 void assertInit(char result, const char* module);
 // INITIALIZE THE ENGINE AND RETURNS THE `CAEngine*`
@@ -373,5 +380,15 @@ void multVector2(Vector2* vector2, float k);
 Vector2 getMovementVector2(ALLEGRO_KEYBOARD_STATE* kState, int keyLeft, int keyRight, int keyUp, int keyDown);
 // SET THE AUTO TILE GENERATION FOR THE WORLD OF THE SCENE
 void setSceneAutoTileGeneration(Scene* scene, int minIdX, int maxIdX, int minIdY, int maxIdY);
+// CHANGE THE TITLE OF THE WINDOW
+void changeWindowTitle(CAEngine* engine, const char* title);
+// CHANGE THE SIZE OF THE WINDOW
+void changeWindowSize(CAEngine* engine, int w, int h);
+// CHANGE THE POSITION OF THE WINDOW
+void changeWindowPosition(CAEngine* engine, int x, int y);
+// CHANGE THE FULLSCREEN MODE OF THE WINDOW
+void changeWindowFullscreen(CAEngine* engine, unsigned char enable);
+// REMOVE OR ADD THE WINDOW FRAME
+void changeWindowNoFrame(CAEngine* engine, unsigned char enable);
 
 #endif

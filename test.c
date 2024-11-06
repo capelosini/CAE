@@ -169,7 +169,14 @@ int main(){
 
     square->animation.onAnimationEnd=onPlayerAnimationEnd;
 
+    // changeWindowTitle(engine, "New title!");
+    // changeWindowFullscreen(engine, 0);
+    // changeWindowNoFrame(engine, 1);
+    // changeWindowSize(engine, 500, 500);
+    // changeWindowPosition(engine, 100, 100);
+
     while (engine->isAlive){
+        printf("\n%d", getCurrentDisplayAdapter(engine));
         render(engine);
     }
 
