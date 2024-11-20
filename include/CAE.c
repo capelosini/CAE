@@ -210,51 +210,43 @@ void renderText(Text* text){
     if (!text->visible)
         return;
 
-    int lineHeight=al_get_font_line_height(text->font->font);
-    int textHeight=lineHeight;
-    char* textToDraw = (char*)malloc(strlen(text->text)+1);
-    char* tmp = (char*)malloc(strlen(text->text)+1);
-    strcpy(textToDraw, "");
-    strcpy(tmp, text->text);
-
-    if (text->width > 0){
-        // SEPARATION OF THE TEXT WITH \n
-        tmp = strtok(tmp, " ");
-        int lineWidth=0;
-        textHeight+=lineHeight;
-        while (tmp != NULL){
-            int wordWidth = al_get_text_width(text->font->font, tmp);
-            if (lineWidth+wordWidth >= text->width){
-                strcat(textToDraw, "\n");
-                textHeight+=lineHeight;
-                lineWidth=0;
-            } else if (lineWidth != 0) {
-                strcat(textToDraw, " ");
-            }
-            strcat(textToDraw, tmp);
-            lineWidth+=wordWidth;
-            tmp = strtok(NULL, " ");
+    char *copyText = malloc(2048 * sizeof(char));
+    strcpy(copyText, text->text);
+    char *newText = malloc(2048 * sizeof(char));
+    newText[0] = '\0';
+    char *line = malloc(256 * sizeof(char));
+    line[0] = '\0';
+    char *word = strtok(copyText, " ");
+    int lineCount = 1;
+    int lineHeight = al_get_font_line_height(text->font->font);
+    while (word) {
+        if (al_get_text_width(text->font->font, line) + al_get_text_width(text->font->font, word) >= text->width - text->padding.x) {
+            strcat(newText, line);
+            strcat(newText, "\n");
+            line[0] = '\0';
+            lineCount++;
         }
+        strcat(line, word);
+        strcat(line, " ");
+        word = strtok(NULL, " ");
+    }
+    if (line[0] != '\0') {
+        strcat(newText, line);
+    }
 
-        // DRAW NON STATIC TEXT BACKGROUND
-        al_draw_filled_rectangle(text->position.x-text->padding.x, text->position.y-text->padding.y, text->position.x+text->width+text->padding.x*2, text->position.y+textHeight+text->padding.y, text->backgroundColor);
+    al_draw_filled_rectangle(text->position.x, text->position.y, text->position.x + text->width + text->padding.x/2, text->position.y + lineCount*lineHeight + text->padding.x*2, text->backgroundColor);
+
+    char *buffer  = strtok(newText, "\n");
+    lineCount = 0;
+    while (buffer) {
+        al_draw_text(text->font->font, al_map_rgb(255, 255, 255), text->position.x + text->padding.x/2, text->position.y + lineCount*lineHeight + text->padding.y, 0, buffer);
+        buffer = strtok(NULL, "\n");
+        lineCount++;
     }
-    else{
-        // DRAW STATIC TEXT BACKGROUND
-        al_draw_filled_rectangle(text->position.x-text->padding.x, text->position.y-text->padding.y, text->position.x+al_get_text_width(text->font->font, text->text)+text->padding.x, text->position.y+lineHeight+text->padding.y, text->backgroundColor);
-        strcpy(textToDraw, text->text);
-    }
-    // DRAW THE TEXT WITH \n SUPPORT
-    tmp=strtok(textToDraw, "\n");
-    int line = 0;
-    while (tmp != NULL){
-        al_draw_text(text->font->font, text->color, text->position.x, text->position.y+lineHeight*line, 0, tmp);
-        line++;
-        tmp = strtok(NULL, "\n");
-    }
-    // FREE USED STUFF
-    free(textToDraw);
-    free(tmp);
+
+    free(line);
+    free(copyText);
+    free(newText);
 }
 
 void renderProgressBar(ProgressBar* bar){
