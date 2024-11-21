@@ -239,7 +239,7 @@ void renderText(Text* text){
     char *buffer  = strtok(newText, "\n");
     lineCount = 0;
     while (buffer) {
-        al_draw_text(text->font->font, al_map_rgb(255, 255, 255), text->position.x + text->padding.x/2, text->position.y + lineCount*lineHeight + text->padding.y, 0, buffer);
+        al_draw_text(text->font->font, text->color, text->position.x + text->padding.x/2, text->position.y + lineCount*lineHeight + text->padding.y, 0, buffer);
         buffer = strtok(NULL, "\n");
         lineCount++;
     }
