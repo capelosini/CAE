@@ -37,12 +37,12 @@ void mainSceneScript(Scene* self){
     ALLEGRO_KEYBOARD_STATE keyState;
     al_get_keyboard_state(&keyState);
     Vector2 mov = getMovementVector2(&keyState, ALLEGRO_KEY_A, ALLEGRO_KEY_D, ALLEGRO_KEY_W, ALLEGRO_KEY_S);
-    
+
     square->physics.acc = (Vector2){abs(mov.x)*playerAcc, abs(mov.y)*playerAcc};
     if (mov.x != 0){
         square->physics.directions.x = mov.x;
         square->animation.direction.x = mov.x;
-    } 
+    }
     if (mov.y != 0){
         square->physics.directions.y = mov.y;
     }
@@ -113,7 +113,7 @@ int main(){
     square3->startCollisionOffset.y=100;
     square3->startCollisionOffset.x=50;
     square3->endCollisionOffset.x=-50;
-    
+
     setGameObjectAnimation(square, demoBitmap, 108, 140, 4, 20);
     setGameObjectBitmap(square3, loadBitmap(engine, "./images/demoTree.png"));
     setGameObjectBitmap(square4, createSubBitmap(engine, square3->bitmap, 0, 0, 500, 500));
@@ -132,7 +132,7 @@ int main(){
                 addWorldTile(mainScene, 0, 0, j, i);
             } else if (i==0){
                 addWorldTile(mainScene, 1, 0, j, i);
-            } 
+            }
             else{
                 addWorldTile(mainScene, 1, 1, j, i);
             }
@@ -147,7 +147,7 @@ int main(){
     createText(title,engine->displayWidth / 2 - al_get_text_width(arialFont->font, title) / 2, 50, 0, al_map_rgb(255, 255, 255), al_map_rgb(5, 2, 50), NULL, arialFont, 10, 10, mainMenu);
     Text* someTextHere=createText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ut tincidunt elit. Nunc a magna at nulla tempor iaculis. Curabitur at enim sollicitudin, varius nisi vel, viverra odio. Ut porta metus sed metus gravida elementum. Pellentesque ut mi id quam euismod convallis. Duis vulputate tempus sagittis. Quisque aliquam justo justo, eget lobortis neque tempor non.Integer porta volutpat turpis, nec venenatis ante volutpat sit amet. Proin condimentum vitae augue id tincidunt. Donec tristique lectus non dui pellentesque tincidunt. In sit amet leo suscipit, feugiat leo id, condimentum tellus. Proin vel tempor metus. Mauris in auctor velit. Donec justo justo, iaculis eget pellentesque eget, interdum a nibh. Aenean tincidunt tempor sem. Integer eget elementum metus. Suspendisse non fringilla nunc, sit amet suscipit diam.Suspendisse a justo lorem. Phasellus ac nulla sed arcu fermentum sollicitudin. Suspendisse potenti. Aenean a augue venenatis, rhoncus sapien ut, laoreet felis. Vivamus mi neque, iaculis ac ligula eget, fermentum maximus elit. Praesent at elementum lorem, et tincidunt leo. Nunc ut lacinia ligula. Aliquam eu est finibus, iaculis ipsum vitae, dignissim risus. Proin pulvinar urna sit amet metus pharetra, eget pulvinar nisl sodales. Proin aliquam dolor at urna dignissim maximus. Nulla imperdiet varius pulvinar", 800, 200, 340, al_map_rgb(255, 255, 255), al_map_rgba(0,0,0,100), NULL, arialFont, 50, 50, mainMenu);
     addButtonToScene(mainMenu, createButton(engine, engine->displayWidth / 2 - 50, 100, 100, 50, al_map_rgb(10, 10, 10), al_map_rgb(255, 255, 255), "Play", "./fonts/arial.ttf", createSubBitmap(engine, demoBitmap, 0, 0, 108, 140), startGameButtonClicked));
-    textInMainMenu=createText("Hello World!\nDeserunt aliqua duis aliqua magna adipisicing ea ex enim tempor eiusmod reprehenderit officia quis excepteur. Mollit veniam adipisicing incididunt qui est minim.", 200, 500, 400, al_map_rgb(255,255,255), al_map_rgb(0, 0, 0), NULL, arialFont, 50, 50, mainMenu);
+    textInMainMenu=createText("Hello World!\n\r\nDeserunt aliqua duis aliqua magna adipisicing ea ex enim tempor eiusmod reprehenderit officia quis excepteur. Mollit veniam adipisicing incididunt qui est minim.", 200, 500, 400, al_map_rgb(255,255,255), al_map_rgb(0, 0, 0), NULL, arialFont, 50, 50, mainMenu);
     addGameObjectToScene(mainMenu, square);
     // MAIN SCENE
     createText("Hello WOrld!", 20, 20, 0, al_map_rgb(0,200,0), al_map_rgba(0, 0, 0, 100), NULL, arialFont, 20, 20, mainScene);

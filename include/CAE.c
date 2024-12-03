@@ -206,45 +206,115 @@ void renderButton(Button* button){
     }
 }
 
-void renderText(Text* text){
+void renderText(Text* text) {
     if (!text->visible)
         return;
 
     char *copyText = malloc(2048 * sizeof(char));
-    strcpy(copyText, text->text);
     char *newText = malloc(2048 * sizeof(char));
+    if (!copyText || !newText) {
+        if (copyText) free(copyText);
+        if (newText) free(newText);
+        return;
+    }
+
+    strncpy(copyText, text->text, 2047);
+    copyText[2047] = '\0';
     newText[0] = '\0';
-    char *line = malloc(256 * sizeof(char));
-    line[0] = '\0';
-    char *word = strtok(copyText, " ");
-    int lineCount = 1;
+
+    int lineCount = 0;
     int lineHeight = al_get_font_line_height(text->font->font);
-    while (word) {
-        if (al_get_text_width(text->font->font, line) + al_get_text_width(text->font->font, word) >= text->width - text->padding.x) {
-            strcat(newText, line);
+
+    char *saveptr1 = NULL;
+    char *line = strtok_r(copyText, "\n", &saveptr1);
+    int consecutive_newlines = 0;
+
+    // Process each line separately
+    while (line || consecutive_newlines > 0) {
+        if (!line || strlen(line) == 0) {
+            // Empty line, just add a newline character
             strcat(newText, "\n");
-            line[0] = '\0';
+            lineCount++;
+            consecutive_newlines--;
+            if (consecutive_newlines == 0) {
+                line = strtok_r(NULL, "\n", &saveptr1);
+            }
+            continue;
+        }
+
+        // Count consecutive newlines for next iteration
+        char *next = saveptr1;
+        consecutive_newlines = 0;
+        while (next && *next == '\n') {
+            consecutive_newlines++;
+            next++;
+        }
+
+        char *saveptr2 = NULL;
+        char *word = strtok_r(line, " ", &saveptr2);
+        char currentLine[256] = "";
+
+        // Process words in the current line
+        while (word) {
+            if (strlen(currentLine) > 0) {
+                // Check if adding the next word would exceed the width
+                char testLine[256];
+                snprintf(testLine, sizeof(testLine), "%s %s", currentLine, word);
+
+                if (al_get_text_width(text->font->font, testLine) >= text->width - text->padding.x) {
+                    // Current line is full, add it to newText
+                    strcat(newText, currentLine);
+                    strcat(newText, "\n");
+                    currentLine[0] = '\0';
+                    lineCount++;
+                }
+            }
+
+            if (strlen(currentLine) > 0) {
+                strcat(currentLine, " ");
+            }
+            strcat(currentLine, word);
+
+            word = strtok_r(NULL, " ", &saveptr2);
+        }
+
+        // Add the remaining line
+        if (strlen(currentLine) > 0) {
+            strcat(newText, currentLine);
+            strcat(newText, "\n");
             lineCount++;
         }
-        strcat(line, word);
-        strcat(line, " ");
-        word = strtok(NULL, " ");
-    }
-    if (line[0] != '\0') {
-        strcat(newText, line);
+
+        line = strtok_r(NULL, "\n", &saveptr1);
     }
 
-    al_draw_filled_rectangle(text->position.x, text->position.y, text->position.x + text->width + text->padding.x/2, text->position.y + lineCount*lineHeight + text->padding.x*2, text->backgroundColor);
+    // Draw background
+    al_draw_filled_rectangle(
+        text->position.x,
+        text->position.y,
+        text->position.x + text->width + text->padding.x/2,
+        text->position.y + lineCount*lineHeight + text->padding.x*2,
+        text->backgroundColor
+    );
 
-    char *buffer  = strtok(newText, "\n");
+    // Draw text lines
+    char *saveptr3 = NULL;
+    char *buffer = strtok_r(newText, "\n", &saveptr3);
     lineCount = 0;
+
     while (buffer) {
-        al_draw_text(text->font->font, text->color, text->position.x + text->padding.x/2, text->position.y + lineCount*lineHeight + text->padding.y, 0, buffer);
-        buffer = strtok(NULL, "\n");
+        al_draw_text(
+            text->font->font,
+            text->color,
+            text->position.x + text->padding.x/2,
+            text->position.y + lineCount*lineHeight + text->padding.y,
+            0,
+            buffer
+        );
+        buffer = strtok_r(NULL, "\n", &saveptr3);
         lineCount++;
     }
 
-    free(line);
     free(copyText);
     free(newText);
 }
@@ -1253,7 +1323,7 @@ void changeWindowTitle(CAEngine* engine, const char* title){
 void changeWindowSize(CAEngine* engine, int w, int h){
     if (w <= 0 || h <= 0)
         return;
-    
+
     engine->displayWidth=w;
     engine->displayHeight=h;
     al_resize_display(engine->display, w, h);
