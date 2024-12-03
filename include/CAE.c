@@ -211,112 +211,75 @@ void renderText(Text* text) {
         return;
 
     char *copyText = malloc(2048 * sizeof(char));
-    char *newText = malloc(2048 * sizeof(char));
-    if (!copyText || !newText) {
-        if (copyText) free(copyText);
-        if (newText) free(newText);
-        return;
-    }
+    strcpy(copyText, text->text);
 
-    strncpy(copyText, text->text, 2047);
-    copyText[2047] = '\0';
+    char *newText = malloc(2048 * sizeof(char));
     newText[0] = '\0';
 
-    int lineCount = 0;
+    char *line = malloc(256 * sizeof(char));
+    line[0] = '\0';
+
+    int lineCount = 1;
     int lineHeight = al_get_font_line_height(text->font->font);
+    char *ptr = copyText;
 
-    char *saveptr1 = NULL;
-    char *line = strtok_r(copyText, "\n", &saveptr1);
-    int consecutive_newlines = 0;
-
-    // Process each line separately
-    while (line || consecutive_newlines > 0) {
-        if (!line || strlen(line) == 0) {
-            // Empty line, just add a newline character
+    while (*ptr) {
+        if (*ptr == '\n') {
+            // Adiciona a linha atual ao novo texto
+            strcat(newText, line);
             strcat(newText, "\n");
-            lineCount++;
-            consecutive_newlines--;
-            if (consecutive_newlines == 0) {
-                line = strtok_r(NULL, "\n", &saveptr1);
+            line[0] = '\0'; // Reinicia a linha
+            lineCount++;    // Conta nova linha
+        } else {
+            // Calcula largura e decide se deve quebrar a linha
+            char temp[2] = {*ptr, '\0'};
+            if (al_get_text_width(text->font->font, line) + al_get_text_width(text->font->font, temp) >= text->width - text->padding.x) {
+                strcat(newText, line);
+                strcat(newText, "\n");
+                line[0] = '\0';
+                lineCount++;
             }
-            continue;
+            strcat(line, temp);
         }
-
-        // Count consecutive newlines for next iteration
-        char *next = saveptr1;
-        consecutive_newlines = 0;
-        while (next && *next == '\n') {
-            consecutive_newlines++;
-            next++;
-        }
-
-        char *saveptr2 = NULL;
-        char *word = strtok_r(line, " ", &saveptr2);
-        char currentLine[256] = "";
-
-        // Process words in the current line
-        while (word) {
-            if (strlen(currentLine) > 0) {
-                // Check if adding the next word would exceed the width
-                char testLine[256];
-                snprintf(testLine, sizeof(testLine), "%s %s", currentLine, word);
-
-                if (al_get_text_width(text->font->font, testLine) >= text->width - text->padding.x) {
-                    // Current line is full, add it to newText
-                    strcat(newText, currentLine);
-                    strcat(newText, "\n");
-                    currentLine[0] = '\0';
-                    lineCount++;
-                }
-            }
-
-            if (strlen(currentLine) > 0) {
-                strcat(currentLine, " ");
-            }
-            strcat(currentLine, word);
-
-            word = strtok_r(NULL, " ", &saveptr2);
-        }
-
-        // Add the remaining line
-        if (strlen(currentLine) > 0) {
-            strcat(newText, currentLine);
-            strcat(newText, "\n");
-            lineCount++;
-        }
-
-        line = strtok_r(NULL, "\n", &saveptr1);
+        ptr++;
     }
 
-    // Draw background
+    // Adiciona a última linha, se existir
+    if (line[0] != '\0') {
+        strcat(newText, line);
+    }
+
+    // Desenha o retângulo de fundo
     al_draw_filled_rectangle(
         text->position.x,
         text->position.y,
-        text->position.x + text->width + text->padding.x/2,
-        text->position.y + lineCount*lineHeight + text->padding.x*2,
+        text->position.x + text->width + text->padding.x,
+        text->position.y + lineCount * lineHeight + text->padding.y * 2,
         text->backgroundColor
     );
 
-    // Draw text lines
-    char *saveptr3 = NULL;
-    char *buffer = strtok_r(newText, "\n", &saveptr3);
+    // Renderiza o texto linha por linha
+    char *buffer = strdup(newText); // Cria uma cópia para iterar sem alterar
+    char *lineBuffer = strtok(buffer, "\n");
     lineCount = 0;
 
-    while (buffer) {
+    while (lineBuffer) {
         al_draw_text(
             text->font->font,
             text->color,
-            text->position.x + text->padding.x/2,
-            text->position.y + lineCount*lineHeight + text->padding.y,
+            text->position.x + text->padding.x / 2,
+            text->position.y + lineCount * lineHeight + text->padding.y,
             0,
-            buffer
+            lineBuffer
         );
-        buffer = strtok_r(NULL, "\n", &saveptr3);
+        lineBuffer = strtok(NULL, "\n");
         lineCount++;
     }
 
+    free(line);
     free(copyText);
     free(newText);
+    free(buffer);
 }
 
 void renderProgressBar(ProgressBar* bar){
